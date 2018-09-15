@@ -1,19 +1,39 @@
 /*
 * Author: Flash
-* Date: 14/09/2018
+* Date: 15/09/2018
 */
+
 "use strict";
 
 let web3;
-web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+try{
+	web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+	console.log("Generated new web3 provider");
+	console.log("web3.version: " + web3.version);
+}catch(e){
+	console.error("Exiting program: " + e);
+	throw new Error("");
+}
 
-console.log("Generated new web3 provider");
-console.log("web3.version: " + web3.version + "\n");
+main();
 
-createAccount();
+function main() {	
 
-async function createAccount() {
-	var key = await web3.eth.accounts.create();
-	console.log("privateKey: " + key.privateKey);
-	console.log("address: " + key.address);
+}
+
+function buttonClick(_ref) {
+
+}
+
+function createAccount() {
+	let account = web3.eth.accounts.create();
+	console.log("privateKey: " + account.privateKey);
+	console.log("address: " + account.address);
+}
+
+function isValidHex(_string) {
+    if (!_string.length) return true;
+    _string = _string.toUpperCase();
+    let re = /^[0-9A-F]+$/g;
+    return re.test(_string);
 }
