@@ -33,7 +33,7 @@ function handleSettings(checkbox) {
 
 	if(checkbox===1){
 		const start = document.forms[0].checkStart.checked;
-		const end = document.forms[0].checkStart.checked;
+		const end = document.forms[0].checkEnd.checked;
 		if(start===false||end==false){
 			document.forms[0].checkAll.checked = false;
 		}
