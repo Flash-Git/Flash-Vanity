@@ -41,7 +41,12 @@ function handleSettings(checkbox) {
 }
 
 function buttonClick() {
-
+	const vanityStrings = document.forms[0].vanityStrings.value.split(" ");
+	for (var i = 0; i < vanityStrings.length; i++){
+		if(!isValidHex(vanityStrings[i])){
+			console.error(vanityStrings[i]);//TODO handle invalid strings
+		}
+	}
 }
 
 function createAccount() {
