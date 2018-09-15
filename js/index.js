@@ -21,7 +21,26 @@ function main() {
 
 }
 
-function buttonClick(_ref) {
+function handleSettings(checkbox) {
+	if(checkbox===0){
+		const all = document.forms[0].checkAll.checked;
+		if(all==true){
+			document.forms[0].checkStart.checked = true;
+			document.forms[0].checkEnd.checked = true;
+			return;
+		}
+	}
+
+	if(checkbox===1){
+		const start = document.forms[0].checkStart.checked;
+		const end = document.forms[0].checkStart.checked;
+		if(start===false||end==false){
+			document.forms[0].checkAll.checked = false;
+		}
+	}
+}
+
+function buttonClick() {
 
 }
 

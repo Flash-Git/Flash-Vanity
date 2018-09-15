@@ -14,6 +14,28 @@
 		<div class="header">
 			<h1>VANITY</h1>
 		</div>
+		<div class="main">
+			<form name="settings">
+				<fieldset>
+					<legend>Settings:</legend>
+					Vanity Placement:<br>
+					<input type="checkbox" onchange="handleSettings(0);" name="checkAll" value="all">
+					Anywhere:<br>
+					<input type="checkbox" onchange="handleSettings(1);" name="checkStart" value="start">
+					At Start:<br>
+					<input type="checkbox" onchange="handleSettings(1);" name="checkEnd" value="end">
+					At End:<br><br>
+					<input type="checkbox" name="enableLeetspeak" value="leetspeak">
+					Enable leetspeak: <br><br>
+				</fieldset>
+				<fieldset>
+					<legend>Vanity Strings:</legend>
+					
+				</fieldset>>
+				<input type="button" value="Generate" onclick="buttonClick();"">
+
+			</form>
+		</div>
 	</div>
 <script type="text/javascript" src="js/web3.js"></script>
 <script type="text/javascript" src="js/index.js"></script>
