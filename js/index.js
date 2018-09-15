@@ -42,17 +42,19 @@ function handleSettings(checkbox) {
 
 function buttonClick() {
 	const vanityStrings = document.forms[0].vanityStrings.value.split(" ");
-	for (var i = 0; i < vanityStrings.length; i++){
+	for(let i = 0; i < vanityStrings.length; i++){
 		if(!isValidHex(vanityStrings[i])){
-			console.error(vanityStrings[i]);//TODO handle invalid strings
+			console.error("Error at i = " + i + ", " + vanityStrings[i]);//TODO handle invalid strings
+			return;
 		}
 	}
+	findMatches(vanityStrings);
 }
 
-function createAccount() {
-	let account = web3.eth.accounts.create();
-	console.log("privateKey: " + account.privateKey);
-	console.log("address: " + account.address);
+function AddressObj(_publicKey, _privateKey, _name = "") {
+    this.publicKey = _publicKey;
+    this.privateKey = _privateKey;
+    this.name = _name;
 }
 
 function isValidHex(_string) {
@@ -60,4 +62,23 @@ function isValidHex(_string) {
     _string = _string.toUpperCase();
     let re = /^[0-9A-F]+$/g;
     return re.test(_string);
+}
+
+function findMatches(_vanityStrings) {
+	while(true){
+		const addressObj = createAccount();
+		for(let i = 0; i < _vanityStrings.length; i++){
+			if(!addressObj.publicKey.includes(_vanityStrings[i])){
+				continue;
+			}
+			console.log(addressObj);
+		}
+	}
+}
+
+
+function createAccount() {
+	const account = web3.eth.accounts.create();
+	const addressObj = new AddressObj(account.address, account.privateKey);
+	return addressObj;
 }
