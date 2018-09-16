@@ -1,6 +1,6 @@
 /*
 * Author: Flash
-* Date: 15/09/2018
+* Date: 16/09/2018
 */
 
 "use strict";
@@ -18,23 +18,23 @@ try{
 main();
 
 function main() {	
-
+	//download('file text', 'myfilename.txt', 'text/plain');
 }
 
-function handleSettings(checkbox) {
-	if(checkbox===0){
+function handleSettings(_checkbox) {
+	if(_checkbox === 0){
 		const all = document.forms[0].checkAll.checked;
-		if(all==true){
+		if(all === true){
 			document.forms[0].checkStart.checked = true;
 			document.forms[0].checkEnd.checked = true;
 			return;
 		}
 	}
 
-	if(checkbox===1){
+	if(_checkbox === 1){
 		const start = document.forms[0].checkStart.checked;
 		const end = document.forms[0].checkEnd.checked;
-		if(start===false||end==false){
+		if(start === false || end === false){
 			document.forms[0].checkAll.checked = false;
 		}
 	}
@@ -53,8 +53,8 @@ function buttonClick() {
 	disabled(true);
 	(function loop(i){
 		findMatches(vanityStrings);
-		if(i<251){
-			if(i%250 != 0){
+		if(i < 251){
+			if(i % 250 != 0){
 				loop(++i);
 		}else{
 			setTimeout(function(){
@@ -91,7 +91,7 @@ function findMatches(_vanityStrings) {
 		}
 		console.log("Public: " + addressObj.publicKey + ", Private: " + addressObj.privateKey + ", Counter: " + counter);
 		counter++;
-		if(counter>5000){
+		if(counter > 5000){
 			throw Error("Finished");
 		}
 	}
@@ -104,23 +104,23 @@ function createAccount() {
 }
 
 //button toggle
-function disabled(on){
-	document.forms[0].button.disabled = on ? 'disabled' : '';
+function disabled(_on){
+	document.forms[0].button.disabled = on ? "disabled" : '';
 }
 
 // Function to download data to a file
-function download(data, filename, type) {
-	var file = new Blob([data], {type: type});
+function download(_data, _filename, _type) {
+	var file = new Blob([_data], {type: _type});
 	if(window.navigator.msSaveOrOpenBlob){//IE10+
-		window.navigator.msSaveOrOpenBlob(file, filename);
+		window.navigator.msSaveOrOpenBlob(file, _filename);
 	}else{//Others
-		var a = document.createElement("a"), url = URL.createObjectURL(file);
-		a.href = url;
-		a.download = filename;
-		document.body.appendChild(a);
-		a.click();
+		const temp = document.createElement("temp"), url = URL.createObjectURL(file);
+		temp.href = url;
+		temp.download = _filename;
+		document.body.appendChild(temp);
+		temp.click();
 		setTimeout(function(){
-			document.body.removeChild(a);
+			document.body.removeChild(temp);
 			window.URL.revokeObjectURL(url);  
 		}, 0);
 	}
