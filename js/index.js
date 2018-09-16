@@ -52,19 +52,19 @@ function buttonClick() {
 
 	disabled(true);
 	(function loop(i){
-	    findMatches(vanityStrings);
-	    if(i<251){
-	    	if(i%250 != 0){
-	    		loop(++i);
-	    	}else{
-		        setTimeout(function(){
-		            loop(1)
-		        },1);
-		    }
-	    }else{
-	    	console.log("Finished loop");
-	        disabled(false);
-	    }
+		findMatches(vanityStrings);
+		if(i<251){
+			if(i%250 != 0){
+				loop(++i);
+		}else{
+			setTimeout(function(){
+				loop(1)
+				}, 1);
+			}
+		}else{
+			console.log("Finished loop");
+			disabled(false);
+		}
 	}(0));
 }
 
@@ -89,7 +89,7 @@ function findMatches(_vanityStrings) {
 		if(!addressObj.publicKey.includes(_vanityStrings[i])){
 			continue;
 		}
-		console.log("Counter: " + counter + ", " + addressObj.publicKey + addressObj.privateKey);
+		console.log("Public: " + addressObj.publicKey + ", Private: " + addressObj.privateKey + ", Counter: " + counter);
 		counter++;
 		if(counter>5000){
 			throw Error("Finished");
@@ -106,4 +106,22 @@ function createAccount() {
 //button toggle
 function disabled(on){
 	document.forms[0].button.disabled = on ? 'disabled' : '';
+}
+
+// Function to download data to a file
+function download(data, filename, type) {
+	var file = new Blob([data], {type: type});
+	if(window.navigator.msSaveOrOpenBlob){//IE10+
+		window.navigator.msSaveOrOpenBlob(file, filename);
+	}else{//Others
+		var a = document.createElement("a"), url = URL.createObjectURL(file);
+		a.href = url;
+		a.download = filename;
+		document.body.appendChild(a);
+		a.click();
+		setTimeout(function(){
+			document.body.removeChild(a);
+			window.URL.revokeObjectURL(url);  
+		}, 0);
+	}
 }
