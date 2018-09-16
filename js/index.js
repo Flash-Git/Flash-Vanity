@@ -44,7 +44,7 @@ function buttonClick() {
 	const vanityStrings = document.forms[0].vanityStrings.value.split(" ");
 	for(let i = 0; i < vanityStrings.length; i++){
 		if(!isValidHex(vanityStrings[i])){
-			console.error("Error at i = " + i + ", " + vanityStrings[i]);//TODO handle invalid strings
+			console.error("Error at i = " + i + ", " + vanityStrings[i]);
 			return;
 		}
 	}
@@ -52,49 +52,60 @@ function buttonClick() {
 
 	disabled(true);
 	(function loop(i){
-		findMatches(vanityStrings);
-		if(i < 251){
-			if(i % 250 != 0){
+		if(findMatches(vanityStrings)){
+			counter++;
+		}
+		if(counter < document.forms[0].limit.value){
+			if(i % 250 !== 0){
 				loop(++i);
-		}else{
-			setTimeout(function(){
-				loop(1)
-				}, 1);
+			}else{
+				setTimeout(
+					function(){
+						loop(1);
+					}, 1
+				);
 			}
 		}else{
 			console.log("Finished loop");
+			download(addressKeyPairs, "VanityKeyPairs.txt", "text/plain");
+			counter = 0;
 			disabled(false);
 		}
 	}(0));
 }
 
-function AddressObj(_publicKey, _privateKey, _name = "") {
+function AddressObj(_publicKey, _privateKey, _name = "Default") {
     this.publicKey = _publicKey;
     this.privateKey = _privateKey;
     this.name = _name;
 }
 
 function isValidHex(_string) {
-    if (!_string.length) return true;
-    _string = _string.toUpperCase();
-    let re = /^[0-9A-F]+$/g;
+    let re;
+    re = /^[0-9A-F]+$/ig;
     return re.test(_string);
 }
 
 let counter = 0;
+let addressKeyPairs = "";
 
 function findMatches(_vanityStrings) {
 	const addressObj = createAccount();
 	for(let i = 0; i < _vanityStrings.length; i++){
-		if(!addressObj.publicKey.includes(_vanityStrings[i])){
-			continue;
+		if(!document.forms[0].caseSensitive.checked){
+			if(!addressObj.publicKey.toUpperCase().includes(_vanityStrings[i].toUpperCase())){
+				continue;
+			}
+		}else{
+			if(!addressObj.publicKey.includes(_vanityStrings[i])){
+				continue;
+			}
 		}
 		console.log("Public: " + addressObj.publicKey + ", Private: " + addressObj.privateKey + ", Counter: " + counter);
-		counter++;
-		if(counter > 5000){
-			throw Error("Finished");
-		}
+		addressKeyPairs += (addressObj.publicKey + " " + addressObj.privateKey + " " + addressObj.name + "\n");
+		return true;
 	}
+	return false;
 }
 
 function createAccount() {
@@ -105,7 +116,7 @@ function createAccount() {
 
 //button toggle
 function disabled(_on){
-	document.forms[0].button.disabled = on ? "disabled" : '';
+	document.forms[0].button.disabled = _on ? "disabled" : '';
 }
 
 // Function to download data to a file
@@ -114,7 +125,7 @@ function download(_data, _filename, _type) {
 	if(window.navigator.msSaveOrOpenBlob){//IE10+
 		window.navigator.msSaveOrOpenBlob(file, _filename);
 	}else{//Others
-		const temp = document.createElement("temp"), url = URL.createObjectURL(file);
+		var temp = document.createElement("a"), url = URL.createObjectURL(file);
 		temp.href = url;
 		temp.download = _filename;
 		document.body.appendChild(temp);
