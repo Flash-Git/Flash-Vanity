@@ -1,0 +1,41 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Testing</title>
+	<meta name="description" content="vanity">
+	<meta name="author" content="Flash">
+	<link rel="stylesheet" href="css/styles.css?v=1.0">
+</head>
+
+<body>
+	<div class="wrapper">
+		<div class="header">
+			<h1>VANITY</h1>
+		</div>
+		<div class="main">
+			<form name="settings">
+				<fieldset>
+					<legend>Settings</legend>
+					Vanity Placement:<br>
+					Anywhere:<input type="checkbox" onchange="handleSettings(0);" name="checkAll">
+					At Start:<input type="checkbox" onchange="handleSettings(1);" name="checkStart">
+					At End:<input type="checkbox" onchange="handleSettings(1);" name="checkEnd">
+					<br><br>Enable leetspeak: <input type="checkbox" name="enableL33tspeak">
+					<br><br>Case sensitive: <input type="checkbox" name="caseSensitive">
+					<br><br>Limit: <input type="input" name="limit" value="" placeholder="100">
+				</fieldset>
+				<fieldset>
+					<legend>Vanity Strings</legend>
+					<textarea type="text" name="vanityStrings" value="" placeholder="1ee7c0de" cols="100" rows="10"></textarea>
+				</fieldset>
+				<input class="button" name="button" type="button" value="Generate" onclick="buttonClick();">
+			</form>
+		</div>
+	</div>
+<script type="text/javascript" src="js/web3.js"></script>
+<script type="text/javascript" src="js/index.js"></script>
+
+</body>
+</html>
