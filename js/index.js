@@ -23,8 +23,46 @@ try{
 
 main();
 
-function main() {	
+function main() {
+	startWorker();
+	startWorker();
+	startWorker();
+	startWorker();startWorker();
+	startWorker();
+	startWorker();
+	startWorker();startWorker();
+	startWorker();
+	startWorker();
+	startWorker();startWorker();
+	startWorker();
+	startWorker();
+	startWorker();startWorker();
+	startWorker();
+	startWorker();
+	startWorker();startWorker();
+	startWorker();
+	startWorker();
+	startWorker();
 
+}
+
+var w;
+
+function startWorker() {
+    if(typeof(Worker) !== "undefined") {
+        w = new Worker("js/worker.js");
+        console.log(w);
+        w.onmessage = function(event) {
+            console.log(event.data);
+        };
+    } else {
+        console.log("Sorry! No Web Worker support");
+    }
+}
+
+function stopWorker() {
+    w.terminate();
+    w = undefined;
 }
 
 //UI
