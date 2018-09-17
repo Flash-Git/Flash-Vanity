@@ -6,7 +6,7 @@
 /*
 * Flash-Vanity
 *
-* Single Process Vanity Keypair Generation
+* Unsuccessful Multithreaded Vanity Keypair Generation
 */
 
 "use strict";
@@ -29,25 +29,15 @@ function main() {
 var w;
 
 function startWorker(vanityStrings, vanityStringsLength, limit, caseSensitive) {
-    if(typeof(Worker) !== "undefined") {
-        w = new Worker("js/worker.js");
-
-		/*
-		w.addEventListener('message', function(e) {
-	      count += e.data;
-	      console.log('worker count: ', e.data);
-	    }, false);
-	    */
-
-	    w.postMessage([vanityStrings,vanityStringsLength,limit,caseSensitive]);
-
-
-        w.onmessage = function(event) {
-        	console.log("msg: " + event.data);
-        };
-    } else {
-        console.log("Sorry! No Web Worker support");
-    }
+	if(typeof(Worker) !== "undefined") {
+		w = new Worker("js/worker.js");
+		w.postMessage([vanityStrings,vanityStringsLength,limit,caseSensitive]);
+		w.onmessage = function(event) {
+			console.log("msg: " + event.data);
+		};
+	}else{
+		console.log("Sorry! No Web Worker support");
+	}
 }
 
 function stopWorker() {
@@ -112,7 +102,7 @@ function AddressObj(_publicKey, _privateKey, _name = "Default") {
 
 function isValidHex(_string) {
 	let re;
-	_string.toUpperCase();
+	_string.toUpperCase();//more efficient than i?
 	re = /^[0-9A-F]+$/g;
 	return re.test(_string);
 }

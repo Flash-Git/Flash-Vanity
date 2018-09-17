@@ -1,3 +1,8 @@
+/*
+* Author: Flash
+* Date: 17/09/2018
+*/
+
 let counter = 0;
 let addressKeyPairs = "";
 
