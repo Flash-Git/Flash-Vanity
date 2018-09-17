@@ -30,17 +30,13 @@ function main() {
 //UI
 function handleSettings(_checkbox) {
 	if(_checkbox === 0){
-		const all = document.forms[0].checkAll.checked;
-		if(all === true){
+		if(document.forms[0].checkAll.checked === true){
 			document.forms[0].checkStart.checked = true;
 			document.forms[0].checkEnd.checked = true;
 			return;
 		}
-	}
-	if(_checkbox === 1){
-		const start = document.forms[0].checkStart.checked;
-		const end = document.forms[0].checkEnd.checked;
-		if(start === false || end === false){
+	}else{
+		if(document.forms[0].checkStart.checked === false || end === false){
 			document.forms[0].checkAll.checked = false;
 		}
 	}
@@ -59,6 +55,10 @@ function buttonClick() {
 		}
 	}
 	console.log("Input: " + vanityStrings.toString());
+	const date = new Date();
+	const startTime = date.getTime();
+	let lastTime = startTime;
+	let lastCounter = 0;
 	console.log("Searching for address...");
 
 	disableButton();
@@ -66,15 +66,21 @@ function buttonClick() {
 	(function loop(_i = 0){
 		if(findMatches(vanityStrings, vanityStringsLength, caseSensitive)){
 			counter++;
+			const newDate = new Date();
+			const perSec = (newDate.getTime() - lastTime)/(_i - lastCounter) * 1000;
+
+			console.log("Addresses per second: " + perSec);
+			lastTime = newDate.getTime()
+			lastCounter = _i;
 		}
 		if(counter < limit){
-			if(_i % 250 !== 0){
+			if(_i % 50 !== 0){
 				loop(++_i);
 			}else{
 				setTimeout(
 					function(){
 						loop(++_i);
-					}, 1
+					}, 0.1
 				);
 			}
 		}else{
