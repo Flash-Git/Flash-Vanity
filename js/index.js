@@ -1,6 +1,12 @@
 /*
 * Author: Flash
-* Date: 16/09/2018
+* Date: 17/09/2018
+*/
+
+/*
+* Flash-Vanity
+*
+* Single Process Vanity Keypair Generation
 */
 
 "use strict";
@@ -21,6 +27,7 @@ function main() {
 
 }
 
+//UI
 function handleSettings(_checkbox) {
 	if(_checkbox === 0){
 		const all = document.forms[0].checkAll.checked;
@@ -30,7 +37,6 @@ function handleSettings(_checkbox) {
 			return;
 		}
 	}
-
 	if(_checkbox === 1){
 		const start = document.forms[0].checkStart.checked;
 		const end = document.forms[0].checkEnd.checked;
@@ -42,48 +48,60 @@ function handleSettings(_checkbox) {
 
 function buttonClick() {
 	const vanityStrings = document.forms[0].vanityStrings.value.split(" ");
-	for(let i = 0; i < vanityStrings.length; i++){
+	const vanityStringsLength = vanityStrings.length;
+	const limit = document.forms[0].limit.value;
+	const caseSensitive = document.forms[0].caseSensitive.checked;
+
+	for(let i = 0; i < vanityStringsLength; i++){
 		if(!isValidHex(vanityStrings[i])){
 			console.error("Error at i = " + i + ", " + vanityStrings[i]);
 			return;
 		}
 	}
-	console.log(vanityStrings);
+	console.log("Input: " + vanityStrings.toString());
+	console.log("Searching for address...");
 
 	disableButton();
-	(function loop(i){
-		if(findMatches(vanityStrings)){
+
+	(function loop(_i = 0){
+		if(findMatches(vanityStrings, vanityStringsLength, caseSensitive)){
 			counter++;
 		}
-		if(counter < document.forms[0].limit.value){
-			if(i % 250 !== 0){
-				loop(++i);
+		if(counter < limit){
+			if(_i % 250 !== 0){
+				loop(++_i);
 			}else{
 				setTimeout(
 					function(){
-						loop(1);
+						loop(++_i);
 					}, 1
 				);
 			}
 		}else{
-			console.log("Finished loop");
+			console.log("Finished generation");
+			reset();
 			download(addressKeyPairs, "VanityKeyPairs.txt", "text/plain");
-			counter = 0;
-			enableButton();
 		}
 	}(0));
+}
+
+function reset() {
+	counter = 0;
+	enableButton();
 }
 
 function disableButton() {
 	const button = document.forms[0].button;
 	button.disabled = true;
 	button.className = "buttonDisabled";
+	button.value = "Generating...";
 }
 
 function enableButton(){
     const button = document.forms[0].button;
 	button.disabled = false;
 	button.className = "button";
+	button.value = "Generate";
 }
 
 function AddressObj(_publicKey, _privateKey, _name = "Default") {
@@ -101,29 +119,34 @@ function isValidHex(_string) {
 let counter = 0;
 let addressKeyPairs = "";
 
-function findMatches(_vanityStrings) {
+function findMatches(_vanityStrings, _vanityStringsLength, _caseSensitive) {
 	const addressObj = createAccount();
-	for(let i = 0; i < _vanityStrings.length; i++){
-		if(!document.forms[0].caseSensitive.checked){
+
+	if(!_caseSensitive){
+		for(let i = 0; i < _vanityStringsLength; i++){
 			if(!addressObj.publicKey.toUpperCase().includes(_vanityStrings[i].toUpperCase())){
 				continue;
 			}
-		}else{
+			console.log("Public: " + addressObj.publicKey + ", Private: " + addressObj.privateKey + ", Counter: " + counter);
+			addressKeyPairs += (addressObj.publicKey + " " + addressObj.privateKey + " " + addressObj.name + "\n");
+			return true;
+		}
+	}else{
+		for(let i = 0; i < _vanityStringsLength; i++){
 			if(!addressObj.publicKey.includes(_vanityStrings[i])){
 				continue;
 			}
+			console.log("Public: " + addressObj.publicKey + ", Private: " + addressObj.privateKey + ", Counter: " + counter);
+			addressKeyPairs += (addressObj.publicKey + " " + addressObj.privateKey + " " + addressObj.name + "\n");
+			return true;
 		}
-		console.log("Public: " + addressObj.publicKey + ", Private: " + addressObj.privateKey + ", Counter: " + counter);
-		addressKeyPairs += (addressObj.publicKey + " " + addressObj.privateKey + " " + addressObj.name + "\n");
-		return true;
 	}
 	return false;
 }
 
 function createAccount() {
 	const account = web3.eth.accounts.create();
-	const addressObj = new AddressObj(account.address, account.privateKey);
-	return addressObj;
+	return new AddressObj(account.address, account.privateKey);
 }
 
 // Function to download data to a file
