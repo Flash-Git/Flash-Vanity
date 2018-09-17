@@ -18,7 +18,7 @@ try{
 main();
 
 function main() {	
-	//download('file text', 'myfilename.txt', 'text/plain');
+
 }
 
 function handleSettings(_checkbox) {
@@ -50,7 +50,7 @@ function buttonClick() {
 	}
 	console.log(vanityStrings);
 
-	disabled(true);
+	disableButton();
 	(function loop(i){
 		if(findMatches(vanityStrings)){
 			counter++;
@@ -69,21 +69,33 @@ function buttonClick() {
 			console.log("Finished loop");
 			download(addressKeyPairs, "VanityKeyPairs.txt", "text/plain");
 			counter = 0;
-			disabled(false);
+			enableButton();
 		}
 	}(0));
 }
 
+function disableButton() {
+	const button = document.forms[0].button;
+	button.disabled = true;
+	button.className = "buttonDisabled";
+}
+
+function enableButton(){
+    const button = document.forms[0].button;
+	buttons[i].disabled = false;
+	buttons[i].className = "button";
+}
+
 function AddressObj(_publicKey, _privateKey, _name = "Default") {
-    this.publicKey = _publicKey;
-    this.privateKey = _privateKey;
-    this.name = _name;
+	this.publicKey = _publicKey;
+	this.privateKey = _privateKey;
+	this.name = _name;
 }
 
 function isValidHex(_string) {
-    let re;
-    re = /^[0-9A-F]+$/ig;
-    return re.test(_string);
+	let re;
+	re = /^[0-9A-F]+$/ig;
+	return re.test(_string);
 }
 
 let counter = 0;
@@ -112,11 +124,6 @@ function createAccount() {
 	const account = web3.eth.accounts.create();
 	const addressObj = new AddressObj(account.address, account.privateKey);
 	return addressObj;
-}
-
-//button toggle
-function disabled(_on){
-	document.forms[0].button.disabled = _on ? "disabled" : '';
 }
 
 // Function to download data to a file
