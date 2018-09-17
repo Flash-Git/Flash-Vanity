@@ -82,8 +82,8 @@ function disableButton() {
 
 function enableButton(){
     const button = document.forms[0].button;
-	buttons[i].disabled = false;
-	buttons[i].className = "button";
+	button.disabled = false;
+	button.className = "button";
 }
 
 function AddressObj(_publicKey, _privateKey, _name = "Default") {

@@ -17,17 +17,17 @@
 		<div class="main">
 			<form name="settings">
 				<fieldset>
-					<legend>Settings:</legend>
+					<legend>Settings</legend>
 					Vanity Placement:<br>
 					Anywhere:<input type="checkbox" onchange="handleSettings(0);" name="checkAll">
 					At Start:<input type="checkbox" onchange="handleSettings(1);" name="checkStart">
 					At End:<input type="checkbox" onchange="handleSettings(1);" name="checkEnd">
 					<br><br>Enable leetspeak: <input type="checkbox" name="enableLeetspeak">
 					<br><br>Case sensitive: <input type="checkbox" name="caseSensitive">
-					<br><br>Limit: <input type="input" name="limit" value="" placeholder="500">
+					<br><br>Limit: <input type="input" name="limit" value="" placeholder="100">
 				</fieldset>
 				<fieldset>
-					<legend>Vanity Strings:</legend>
+					<legend>Vanity Strings</legend>
 					<textarea type="text" name="vanityStrings" value="" placeholder="1eetc0de" cols="100" rows="10"></textarea>
 				</fieldset>
 				<input class="button" name="button" type="button" value="Generate" onclick="buttonClick();">
