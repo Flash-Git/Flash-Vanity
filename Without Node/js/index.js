@@ -1,6 +1,6 @@
 /*
 * Author: Flash
-* Date: 17/09/2018
+* Date: 22/09/2018
 */
 
 /*
@@ -93,6 +93,7 @@ function buttonClick() {
 
 function reset() {
 	counter = 0;
+	addressKeyPairs = "";
 	enableButton();
 }
 
