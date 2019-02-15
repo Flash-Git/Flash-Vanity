@@ -5,6 +5,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "ethereum-blockies-base64": "^1.0.2",
+    "ethereumjs-util": "^6.1.0",
     "react": "^16.8.2",
     "react-dom": "^16.8.2",
     "react-scripts": "^2.1.5",
