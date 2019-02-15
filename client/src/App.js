@@ -4,16 +4,18 @@ import Web3 from "web3";
 import Header from "./components/Header";
 import Web3Status from "./components/Web3Status";
 import Listing from "./components/Listing";
+import Form from "./components/Form";
 
 import "./App.css";
 
 class App extends Component {
 
   state = {
-    connected: false
+    connected: false,
+    accounts: []
   }
 
-  checkConnection = () => {
+  updateConnectionStatus = () => {
     try{
       if(!window.web3.utils.isAddress(window.ethereum.selectedAddress)){
         this.setState({ connected: false });
@@ -28,7 +30,7 @@ class App extends Component {
   }
 
   enableWeb3 = () => {
-    const connection = this.checkConnection();
+    const connection = this.updateConnectionStatus();
     //Check whether the DApp has an open connection to the Ethereum blockchain
     if(connection === 0) return;
         
@@ -42,7 +44,7 @@ class App extends Component {
     //Old const web3 = new Web3(window.web3.currentProvider);
     window.web3 = new Web3(window.ethereum);
     window.ethereum.enable()
-    .then(accounts => this.checkConnection())
+    .then(accounts => this.updateConnectionStatus())
     .catch(e => {
       if(e !== "User rejected provider access"){
         alert("There was an issue signing you in. Please check console for error");
@@ -52,12 +54,17 @@ class App extends Component {
     });
   }
 
+  setAccounts = (accounts) => {
+    this.setState({ accounts });
+  }
+
   render(){
     return(
       <div className="App">
-        <Header connected ={ this.state.connected } />
-        <Web3Status enableWeb3={ this.enableWeb3 } connected ={ this.state.connected } />
-        <Listing connected ={ this.state.connected } />
+        <Header connected={ this.state.connected } />
+        <Web3Status enableWeb3={ this.enableWeb3 } connected={ this.state.connected } />
+        <Form setAccounts={ this.setAccounts } />
+        <Listing connected={ this.state.connected } accounts={ this.state.accounts } />
       </div>
     );
   }
