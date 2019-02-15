@@ -1,15 +1,21 @@
 import React, { Component } from "react";
-import makeBlockie from "ethereum-blockies-base64";
 import PropTypes from "prop-types";
 
+import Blockie from "./Blockie";
+
 class Header extends Component {
+
+  blockie = () => {
+    if(!this.props.connected){
+      return "";
+    }
+    return <Blockie address={ window.ethereum.selectedAddress } size="32px" />;
+  }
+
   render(){
     return(
       <header id="section-header" className="section" style={ headerStyle }>
-        <h2>Flash-Vanity </h2>
-        { this.props.connected === true ? 
-          <img src={makeBlockie(window.ethereum.selectedAddress)} width="32px" height="32px" alt="blockie" style={{ marginLeft:"1em", marginTop:"1.15em" }} />
-        : "" }
+        <h2>Flash-Vanity </h2> &nbsp; <h2>{ this.blockie() }</h2>
       </header>
     );
   }
@@ -17,6 +23,7 @@ class Header extends Component {
 
 const headerStyle = {
   display: "flex",
+  flexDirection: "row",
   background: "#333",
   color: "#fff",
   textAlign: "center",
