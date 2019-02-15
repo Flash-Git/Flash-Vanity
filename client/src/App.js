@@ -2,7 +2,8 @@ import React, { Component } from "react";
 import Web3 from "web3";
 
 import Header from "./components/Header";
-import Web3Status from "./Web3Status";
+import Web3Status from "./components/Web3Status";
+import Listing from "./components/Listing";
 
 import "./App.css";
 
@@ -56,6 +57,7 @@ class App extends Component {
       <div className="App">
         <Header connected ={ this.state.connected } />
         <Web3Status enableWeb3={ this.enableWeb3 } connected ={ this.state.connected } />
+        <Listing connected ={ this.state.connected } />
       </div>
     );
   }
