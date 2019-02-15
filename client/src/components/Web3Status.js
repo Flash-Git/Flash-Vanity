@@ -10,8 +10,9 @@ class Web3Status extends Component {
   render(){
     return(
       <div id="section-web3Status" className="section" style={ web3StatusStyle }>
-        <button onClick={ this.onClick } style={ (this.props.connected ? btnStyleSent : btnStyleUnsent) }>
-          { (this.props.connected ? "Connected" : "Connect to Web3") }
+        <button onClick={ this.onClick } style={ {...btnStyle, ...(this.props.connected ? btnStyleSent : btnStyleUnsent)} }>
+        {/* <button onClick={ this.onClick } style={ (this.props.connected ? btnStyleSent : btnStyleUnsent) }> */}
+          { this.props.connected ? "Connected" : "Connect to Web3" }
         </button>
       </div>
     );
@@ -24,23 +25,21 @@ const web3StatusStyle = {
   background: "#888"
 }
 
-const btnStyleUnsent = {
-  background: "#660000",
+const btnStyle = {
   padding: "6px 26px",
   border: "none",
   borderRadius: "5%",
-  cursor: "pointer",
   color: "#fff",
   fontWeight: "bold"
 }
 
+const btnStyleUnsent = {
+  background: "#660000",
+  cursor: "pointer",
+}
+
 const btnStyleSent = {
   background: "#441111",
-  padding: "6px 26px",
-  border: "none",
-  borderRadius: "5%",
-  color: "#fff",
-  fontWeight: "bold",
 }
 
 //PropTypes
