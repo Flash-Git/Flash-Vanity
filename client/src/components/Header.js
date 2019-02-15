@@ -9,13 +9,13 @@ class Header extends Component {
     if(!this.props.connected){
       return "";
     }
-    return <Blockie address={ window.ethereum.selectedAddress } size="32px" />;
+    return <Blockie address={ window.ethereum.selectedAddress } size="36px" />;
   }
 
   render(){
     return(
       <header id="section-header" className="section" style={ headerStyle }>
-        <h2>Flash-Vanity </h2> &nbsp; <h2>{ this.blockie() }</h2>
+        <h2>Flash-Vanity </h2> &nbsp;&nbsp; <h2>{ this.blockie() }</h2>
       </header>
     );
   }

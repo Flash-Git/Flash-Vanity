@@ -9,3 +9,11 @@ body, html {
   line-height: 1.8em;
   scroll-behavior: smooth;
 }
+
+a:link, a:visited {
+  color: #ffffff;
+}
+
+a:hover, a:active {
+  color: #ffffff;
+}
