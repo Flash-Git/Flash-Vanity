@@ -1,11 +1,15 @@
 const crypto = require("crypto");
 const ethUtils = require("ethereumjs-util");
 
+//const filteredAdds = [];
+
 function generateAccounts(_num) {
-  const accounts = [];
   for(let i = 0; i < _num; i++){
-    accounts.push(getNewAccount());
-    console.log("Address: " + accounts[i].address + ", Key: " + accounts[i].privKey);
+    account = getNewAccount()
+    if(filter(account.address) === true){
+      //filteredAdds.push(account);
+      console.log("Address: " + account.address + ", Key: " + account.privKey);
+    }
   }
 }
 
@@ -15,4 +19,11 @@ function getNewAccount() {
   return { address, privKey: privKey.toString("hex") };
 }
 
-generateAccounts(500);
+function filter(_address) {
+  if(!_address.toUpperCase().includes("f1a57".toUpperCase())){
+    return false;
+  }
+  return true;
+}
+
+generateAccounts(50000);
