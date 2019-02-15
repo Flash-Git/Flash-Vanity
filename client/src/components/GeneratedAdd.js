@@ -1,6 +1,7 @@
 import React, { Component } from "react";
-import makeBlockie from "ethereum-blockies-base64";
 import PropTypes from "prop-types";
+
+import Blockie from "./Blockie";
 
 class GeneratedAdd extends Component {
 
@@ -11,24 +12,28 @@ class GeneratedAdd extends Component {
   render(){
     return(
       <div className="generatedAdd" style={ generatedAddStyle }>
-        <img src={makeBlockie(this.props.address)} width="32px" height="32px" alt="blockie" style={ blockieStyle } />
+        <div style={ blockieStyle }>
+          <Blockie address={ this.props.address } size="32px" />
+        </div>
       </div>
     );
   }
 }
 
 const generatedAddStyle = {
+  justifyContent: "center",
   background: "#8A77A8",
   color: "#fff",
   margin: "0.4rem"
 }
 
 const blockieStyle = {
-  marginLeft:"1em",
-  marginTop:"1.15em"
+  padding: "0.3rem",
+  textAlign: "center",
+  justifyContent: "center"
 }
 
-//PropTypes
+  //PropTypes
 GeneratedAdd.propTypes = {
   address: PropTypes.string.isRequired
 }
