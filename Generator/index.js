@@ -6,7 +6,10 @@ const argv = require('yargs').argv;
 //const filteredAdds = [];
 
 function generateAccounts(_num, _string) {
-  const stringArray = _string.split(", ");
+  _string = _string.split(" ").join("");
+  _string = _string.split(",").join(" or ");
+  
+  const stringArray = _string.split(" or ");
   
   if(!typeof(_num) === "number" && _num > 0){
     console.log("Invalid number: " + _num);
@@ -17,8 +20,11 @@ function generateAccounts(_num, _string) {
     return;
   }
 
-  console.log("Potentially valid input");
-  console.log("Searching for matching addresses...");
+  if(stringArray.length > 1){
+    console.log("Searching for addresses including either " + _string + "...");
+  } else {
+    console.log("Searching for addresses including " + _string + "...");
+  }
 
   for(let i = 0; i < _num; i++){
     account = getNewAccount()
