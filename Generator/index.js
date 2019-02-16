@@ -97,12 +97,15 @@ function filter(_address, _stringArray) {
   
   if(argv.p){
     let score = 0;
+    let list = [];
     for(i = 0; i < _stringArray.length; i++){
       if(address.includes(_stringArray[i].toUpperCase())){
+        list.push(_stringArray[i]);
         score++;
       }
     }
     if(score >= argv.p){
+      console.log("\nFound " + list.join(", ").toString() + ":");
       return score;
     }
     return false;
