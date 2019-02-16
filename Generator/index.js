@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 const crypto = require("crypto");
 const ethUtils = require("ethereumjs-util");
+const cluster = require("cluster");
+const numCPUs = require("os").cpus().length;
+const http = require('http');
 const argv = require("yargs")
       .usage("Usage: $0 -n [num] -s [string] -p [num]")
       .default("n", 100)
@@ -19,31 +22,52 @@ const argv = require("yargs")
       .argv;
 
 //const filteredAdds = [];
+let accCount = 0;
 
-function generateAccounts() {
-  _string = argv.s.split(" ").join("");
-  _string = _string.split(",").join(" or ");
-  
-  const stringArray = _string.split(" or ");
-  
-  if(!typeof(argv.n) === "number" && argv.n > 0){
-    console.log("Invalid number: " + argv.n);
-    return;
-  }
+function run() {
+  if(cluster.isMaster){
+    console.log(`Master ${process.pid} is running`);
 
-  if(!checkString(stringArray)){
-    return;
-  }
-
-  console.log("Searching for addresses including" + (argv.p ? " " + argv.p + " of" : "") + " " + (stringArray.length > 1 ? "either " : "") + _string + "...");
-
-  for(let i = 0; i < argv.n; i){
-    account = getNewAccount()
-    if(filter(account.address, stringArray) === true){
-      i++;
-      //filteredAdds.push(account);
-      console.log("Address: " + account.address + ", Key: " + account.privKey);
+    let string = argv.s.split(" ").join("");
+    string = string.split(",").join(" or ");
+    
+    const stringArray = string.split(" or ");
+    
+    if(!typeof(argv.n) === "number" && argv.n > 0){
+      console.log("Invalid number: " + argv.n);
+      return;
     }
+
+    if(!checkString(stringArray)){
+      return;
+    }
+
+    for(let i = 0; i < numCPUs; i++) {
+      cluster.fork();
+    }
+
+    console.log("Searching for addresses including" + (argv.p ? " " + argv.p + " of" : "") + " " + (stringArray.length > 1 ? "either " : "") + string + "...");
+  }else{
+    console.log(`Worker ${process.pid} is running`);
+
+    let string = argv.s.split(" ").join("");
+    string = string.split(",").join(" or ");
+    
+    const stringArray = string.split(" or ");
+
+    generateAccounts(stringArray);
+  }
+}
+
+function generateAccounts(_stringArray) {
+  for(accCount = 0; accCount < argv.n;){
+    account = getNewAccount()
+    const score = filter(account.address, _stringArray);
+    if(score  === false){
+      continue;
+    }
+    accCount++;
+    console.log("ID: " + process.pid + ", Score: " + score + ", Address: " + account.address + ", Key: " + account.privKey + ", Count: " + accCount);
   }
 }
 
@@ -79,8 +103,7 @@ function filter(_address, _stringArray) {
       }
     }
     if(score >= argv.p){
-      console.log("Score: " + score);
-      return true;
+      return score;
     }
     return false;
   }
@@ -93,4 +116,4 @@ function filter(_address, _stringArray) {
   return false;
 }
 
-generateAccounts();
+run();
