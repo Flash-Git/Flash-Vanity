@@ -4,30 +4,32 @@ const ethUtils = require("ethereumjs-util");
 const cluster = require("cluster");
 const numCPUs = require("os").cpus().length;
 const ora = require("ora");
+const fs = require("fs");
 const argv = require("yargs")
-      .usage("Usage: $0 -n [num] -s [string] -p [num]")
-      .default("n", 100)
-      .alias("n", "number")
-      .describe("n", "Number of matching addresses to generate")//find is more accurate
-      .alias("s", "string")//TODO change to smth less dumb
-      .describe("s", "String to find in addresses, supports multiple strings seperated by commas")
-      .demandOption(["s"])
-      .describe("p", "Minimum number of required strings to find in each address")
-      .example("$0 -s '1337' | Finds addresses containing '1337'")
-      .example("$0 -s '1337, b00b5' | Finds addresses containing either '1337' or 'b00b5'")
-      .example("$0 -n 50 -s '1337' | Finds 50 addresses containing '1337'")
-      .example("$0 -s '1337, b00b5' -p '2' | Finds addresses containing both '1337' and 'b00b5'")
-      .help('h')
-      .alias('h', 'help')
-      .argv;
+  .usage("Usage: $0 -n [num] -s [string] -p [num] -l [string] -h")
+  .default("n", 100)
+  .alias("n", "number")
+  .describe("n", "Number of matching addresses to generate")//find is more accurate
+  .alias("s", "string")//TODO change to smth less dumb
+  .describe("s", "String to find in addresses, supports multiple strings seperated by commas")
+  .demandOption(["s"])
+  .describe("p", "Minimum number of required strings to find in each address")
+  .default("l", Date.now())
+  .alias("l", "log")
+  .describe("l", "Adds logging to the specified filename")
+  .example("$0 -s '1337' | Finds addresses containing '1337'")
+  .example("$0 -s '1337, b00b5' | Finds addresses containing either '1337' or 'b00b5'")
+  .example("$0 -n 50 -s '1337' | Finds 50 addresses containing '1337'")
+  .example("$0 -s '1337, b00b5' -p '2' | Finds addresses containing both '1337' and 'b00b5'")
+  .help('h')
+  .alias('h', 'help')
+  .argv;
 
 //const filteredAdds = [];
 let accCount = 0;
 
 function run() {
   if(cluster.isMaster){
-    //console.log(`Master ${process.pid} is running`);
-
     const string = cleanString();
 
     if(!checkCommand(string)){
@@ -47,10 +49,16 @@ function run() {
       proc = cluster.fork(worker_env);
       proc.on("message", message => {
         if(message.msg){
+          if(accCount >= argv.n) {
+            return;
+          }
           spinner.succeed(accCount+1 + ". " + message.msg + "\n");
+          write(message.msg + "\n");
           accCount++;
           if(accCount >= argv.n) {
             cleanup();
+            spinner.text = "Ending Process";
+            return;
           }
           spinner.text = "Searching for address number " + accCount + " of " + argv.n + "...";
           spinner.start();
@@ -67,6 +75,14 @@ function run() {
   }
 }
 
+function write(_account) {
+  fs.appendFileSync("flash-vanity-" + argv.l +".txt", _account, (err) => {
+    if(err){
+      throw(err);
+    }
+  });
+}
+
 function cleanString() {
   let string = argv.s.split(" ").join("");
   return string = string.split(",").join(" or ");
@@ -81,7 +97,6 @@ function checkCommand(_string) {
   if(!checkString(_string.split(" or "))){
     return false;
   }
-
   return true;
 }
 
@@ -96,8 +111,12 @@ function checkString(_stringArray) {
 }
 
 function cleanup(options, err) {
-  if(err) console.log(err.stack);
-  for(var id in cluster.workers) cluster.workers[id].process.kill();
+  if(err){
+    console.log(err.stack);
+  }
+  for(let id in cluster.workers){
+    cluster.workers[id].process.kill();
+  }
   process.exit();
 }
 
