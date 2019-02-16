@@ -1,7 +1,6 @@
 import crypto from "crypto";
 
 import React, { Component } from "react";
-import Blockie from "./Blockie";
 import PropTypes from "prop-types";
 const ethUtils = require("ethereumjs-util");
 
@@ -11,7 +10,7 @@ class Form extends Component {
   }
   
   onClick = (e) => {
-    this.generateAccounts(15);
+    this.generateAccounts(50);
   }
 
   generateAccounts = (_num) => {
@@ -24,7 +23,7 @@ class Form extends Component {
 
   getNewAccount = () => {
     const privKey = crypto.randomBytes(32);
-    const address = '0x' + ethUtils.privateToAddress(privKey).toString("hex");
+    const address = "0x" + ethUtils.privateToAddress(privKey).toString("hex");
     return { address, privKey: privKey.toString("hex") };
   }
 
