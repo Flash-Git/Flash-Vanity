@@ -3,17 +3,19 @@ const crypto = require("crypto");
 const ethUtils = require("ethereumjs-util");
 const argv = require("yargs")
       .usage("Usage: $0 -n [num] -s [string] -p [num]")
-      .demandOption(["s"])
       .default("n", 100)
       .alias("n", "number")
       .describe("n", "Number of matching addresses to generate")//find is more accurate
       .alias("s", "string")//TODO change to smth less dumb
       .describe("s", "String to find in addresses, supports multiple strings seperated by commas")
+      .demandOption(["s"])
       .describe("p", "Minimum number of required strings to find in each address")
       .example("$0 -s '1337' | Finds addresses containing '1337'")
       .example("$0 -s '1337, b00b5' | Finds addresses containing either '1337' or 'b00b5'")
       .example("$0 -n 50 -s '1337' | Finds 50 addresses containing '1337'")
       .example("$0 -s '1337, b00b5' -p '2' | Finds addresses containing both '1337' and 'b00b5'")
+      .help('h')
+      .alias('h', 'help')
       .argv;
 
 //const filteredAdds = [];
