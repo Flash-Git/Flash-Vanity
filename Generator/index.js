@@ -28,55 +28,61 @@ function run() {
   if(cluster.isMaster){
     console.log(`Master ${process.pid} is running`);
 
-    let string = argv.s.split(" ").join("");
-    string = string.split(",").join(" or ");
-    
-    const stringArray = string.split(" or ");
-    
-    if(!typeof(argv.n) === "number" && argv.n > 0){
-      console.log("Invalid number: " + argv.n);
+    const string = cleanString();
+
+    if(!checkCommand(string)){
       return;
     }
 
-    if(!checkString(stringArray)){
-      return;
-    }
+    console.log("Searching for addresses including" + (argv.p ? " " + argv.p + " of" : "") + " " + (string.split(" or ").length > 1 ? "either " : "") + string + "...");
 
-    for(let i = 0; i < numCPUs; i++) {
-      cluster.fork();
-    }
-
-    console.log("Searching for addresses including" + (argv.p ? " " + argv.p + " of" : "") + " " + (stringArray.length > 1 ? "either " : "") + string + "...");
-
-    const spinner = ora("Searching for addresses...");
+    const spinner = ora("Searching for address number " + accCount + " of " + argv.n + "...");
     spinner.color = "cyan";
     spinner.start();
 
-    setInterval(() => {
-      spinner.text ="Searching for addresses...";//TODO
-    }, 1000);
-  }else{
-    console.log(`Worker ${process.pid} is running`);
-
-    let string = argv.s.split(" ").join("");
-    string = string.split(",").join(" or ");
+    for(let i = 0; i < numCPUs; i++) {
+      const worker_env = {
+        stringArray: string.split(" or ")
+      }
+      proc = cluster.fork(worker_env);
+      proc.on("message", message => {
+        if(message.msg){
+          spinner.succeed(message.msg + "\n");
+          accCount++;
+          if(accCount >= argv.n) {
+            cleanup();
+          }
+          spinner.text = "Searching for address number " + accCount + " of " + argv.n + "...";
+          spinner.start();
+        }
+      });
+    }
     
-    const stringArray = string.split(" or ");
-
-    generateAccounts(stringArray);
+    //TODO Count addresses per second
+    // setInterval(() => {
+    //   spinner.text = "Searching for address number " + accCount + " of " + argv.n + "...";
+    // }, 1000);
+  }else{
+    generateAccounts(process.env.stringArray.split(","));
   }
 }
 
-function generateAccounts(_stringArray) {
-  for(accCount = 0; accCount < argv.n;){
-    account = getNewAccount()
-    const score = filter(account.address, _stringArray);
-    if(score  === false){
-      continue;
-    }
-    accCount++;
-    console.log("ID: " + process.pid + ", Score: " + score + ", Address: " + account.address + ", Key: " + account.privKey + ", Count: " + accCount);
+function cleanString() {
+  let string = argv.s.split(" ").join("");
+  return string = string.split(",").join(" or ");
+}
+
+function checkCommand(_string) {
+  if(!typeof(argv.n) === "number" && argv.n > 0){
+    console.log("Invalid number: " + argv.n);
+    return false;
   }
+
+  if(!checkString(_string.split(" or "))){
+    return false;
+  }
+
+  return true;
 }
 
 function checkString(_stringArray) {
@@ -87,6 +93,25 @@ function checkString(_stringArray) {
     }
   }
   return true;
+}
+
+function cleanup(options, err) {
+  if(err) console.log(err.stack);
+  for(var id in cluster.workers) cluster.workers[id].process.kill();
+  process.exit();
+}
+
+function generateAccounts(_stringArray) {
+  while(true){
+    account = getNewAccount();
+    const scoreMsg = filter(account.address, _stringArray);
+    if(scoreMsg === false){
+      continue;
+    }
+    process.send({
+      msg: (scoreMsg + "\nID: " + process.pid + ", Address: " + account.address + ", Key: " + account.privKey)
+    });
+  }
 }
 
 function isValidHex(_string) {
@@ -113,8 +138,10 @@ function filter(_address, _stringArray) {
       }
     }
     if(score >= argv.p){
-      console.log("\nFound " + list.join(", ").toString() + ":");
-      return score;
+      let listString = list.join(", ").toString();
+      listString = listString.substring(0, listString.lastIndexOf(",")) + " and" + listString.substring(listString.lastIndexOf(",") + 1, listString.length);
+
+      return "Found " + listString + " for a score of "+ score +":";
     }
     return false;
   }
