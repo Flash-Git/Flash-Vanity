@@ -26,7 +26,7 @@ let accCount = 0;
 
 function run() {
   if(cluster.isMaster){
-    console.log(`Master ${process.pid} is running`);
+    //console.log(`Master ${process.pid} is running`);
 
     const string = cleanString();
 
@@ -34,7 +34,7 @@ function run() {
       return;
     }
 
-    console.log("Searching for addresses including" + (argv.p ? " " + argv.p + " of" : "") + " " + (string.split(" or ").length > 1 ? "either " : "") + string + "...");
+    console.log("\nSearching for addresses including" + (argv.p ? " " + argv.p + " of" : "") + " " + (string.split(" or ").length > 1 ? "either " : "") + string + "...\n");
 
     const spinner = ora("Searching for address number " + accCount + " of " + argv.n + "...");
     spinner.color = "cyan";
