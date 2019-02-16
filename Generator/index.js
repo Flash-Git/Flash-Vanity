@@ -47,7 +47,7 @@ function run() {
       proc = cluster.fork(worker_env);
       proc.on("message", message => {
         if(message.msg){
-          spinner.succeed(message.msg + "\n");
+          spinner.succeed(accCount+1 + ". " + message.msg + "\n");
           accCount++;
           if(accCount >= argv.n) {
             cleanup();
