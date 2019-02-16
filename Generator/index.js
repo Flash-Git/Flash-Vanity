@@ -17,6 +17,9 @@ const argv = require("yargs")
   .default("l", Date.now())
   .alias("l", "log")
   .describe("l", "Adds logging to the specified filename")
+  .default("t", numCPUs)
+  .alias("t", "threads")
+  .describe("t", "Number of threads to spawn")
   .example("$0 -s '1337' | Finds addresses containing '1337'")
   .example("$0 -s '1337, b00b5' | Finds addresses containing either '1337' or 'b00b5'")
   .example("$0 -n 50 -s '1337' | Finds 50 addresses containing '1337'")
@@ -42,7 +45,7 @@ function run() {
     spinner.color = "cyan";
     spinner.start();
 
-    for(let i = 0; i < numCPUs; i++) {
+    for(let i = 0; i < argv.t; i++) {
       const worker_env = {
         stringArray: string.split(" or ")
       }
@@ -60,7 +63,7 @@ function run() {
             spinner.text = "Ending Process";
             return;
           }
-          spinner.text = "Searching for address number " + accCount + " of " + argv.n + "...";
+          spinner.text = "Searching for address number " + (accCount+1) + " of " + argv.n + "...";
           spinner.start();
         }
       });
@@ -110,10 +113,7 @@ function checkString(_stringArray) {
   return true;
 }
 
-function cleanup(options, err) {
-  if(err){
-    console.log(err.stack);
-  }
+function cleanup() {
   for(let id in cluster.workers){
     cluster.workers[id].process.kill();
   }
@@ -172,5 +172,11 @@ function filter(_address, _stringArray) {
   }
   return false;
 }
+
+process.stdin.resume();
+
+process.on('exit', cleanup.bind(null, {}));
+process.on('SIGINT', cleanup.bind(null, {}));
+process.on('uncaughtException', cleanup.bind(null, {}));
 
 run();
