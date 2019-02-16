@@ -3,7 +3,7 @@ const crypto = require("crypto");
 const ethUtils = require("ethereumjs-util");
 const cluster = require("cluster");
 const numCPUs = require("os").cpus().length;
-const http = require('http');
+const ora = require("ora");
 const argv = require("yargs")
       .usage("Usage: $0 -n [num] -s [string] -p [num]")
       .default("n", 100)
@@ -47,6 +47,14 @@ function run() {
     }
 
     console.log("Searching for addresses including" + (argv.p ? " " + argv.p + " of" : "") + " " + (stringArray.length > 1 ? "either " : "") + string + "...");
+
+    const spinner = ora("Searching for addresses...");
+    spinner.color = "cyan";
+    spinner.start();
+
+    setInterval(() => {
+      spinner.text ="Searching for addresses...";//TODO
+    }, 1000);
   }else{
     console.log(`Worker ${process.pid} is running`);
 
