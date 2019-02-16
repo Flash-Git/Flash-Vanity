@@ -5,14 +5,14 @@ const argv = require('yargs').argv;
 
 //const filteredAdds = [];
 
-function generateAccounts(_num, _string) {
-  _string = _string.split(" ").join("");
+function generateAccounts() {
+  _string = argv.s.split(" ").join("");
   _string = _string.split(",").join(" or ");
   
   const stringArray = _string.split(" or ");
   
-  if(!typeof(_num) === "number" && _num > 0){
-    console.log("Invalid number: " + _num);
+  if(!typeof(argv.n) === "number" && argv.n > 0){
+    console.log("Invalid number: " + argv.n);
     return;
   }
 
@@ -20,15 +20,12 @@ function generateAccounts(_num, _string) {
     return;
   }
 
-  if(stringArray.length > 1){
-    console.log("Searching for addresses including either " + _string + "...");
-  } else {
-    console.log("Searching for addresses including " + _string + "...");
-  }
+  console.log("Searching for addresses including" + (argv.p ? " " + argv.p + " of" : "") + " " + (stringArray.length > 1 ? "either " : "") + _string + "...");
 
-  for(let i = 0; i < _num; i++){
+  for(let i = 0; i < argv.n; i){
     account = getNewAccount()
     if(filter(account.address, stringArray) === true){
+      i++;
       //filteredAdds.push(account);
       console.log("Address: " + account.address + ", Key: " + account.privKey);
     }
@@ -58,6 +55,21 @@ function getNewAccount() {
 
 function filter(_address, _stringArray) {
   address = _address.toUpperCase();
+  
+  if(argv.p){
+    let score = 0;
+    for(i = 0; i < _stringArray.length; i++){
+      if(address.includes(_stringArray[i].toUpperCase())){
+        score++;
+      }
+    }
+    if(score >= argv.p){
+      console.log("Score: " + score);
+      return true;
+    }
+    return false;
+  }
+
   for(i = 0; i < _stringArray.length; i++){
     if(address.includes(_stringArray[i].toUpperCase())){
       return true;
@@ -66,4 +78,4 @@ function filter(_address, _stringArray) {
   return false;
 }
 
-generateAccounts(argv.n, argv.s);
+generateAccounts();
