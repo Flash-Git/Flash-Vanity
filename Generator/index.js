@@ -19,6 +19,9 @@ const argv = require("yargs")
   .describe("l", "Adds logging to the specified filename")
   .default("t", numCPUs)
   .alias("t", "threads")
+  .describe("r", "refresh time on spinner in ms")
+  .default("r", 5000)
+  .alias("r", "refreshTime")
   .describe("t", "Number of threads to spawn")
   .example("$0 -s '1337' | Finds addresses containing '1337'")
   .example("$0 -s '1337, b00b5' | Finds addresses containing either '1337' or 'b00b5'")
@@ -79,7 +82,7 @@ function run() {
       spinner.text = "Searching for address number " + accCount + " of " + argv.n + " at a rate of " + Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
       lastGeneration = generationTotal;
       lastTime = Date.now();
-    }, 2500);
+    }, argv.r);
   }else{
     generateAccounts(process.env.stringArray.split(","));
   }
