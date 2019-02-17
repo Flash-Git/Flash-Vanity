@@ -85,10 +85,10 @@ function filter(_address, _stringArray) {
   
   if(isValidNum(address)){
     console.log("numby");
-    score += 20;
+    score += 10;
   }else if(isValidTxt(address)){
     console.log("texty");
-    score += 10;
+    score += 20;
   }
 
   let list = [];
@@ -108,10 +108,10 @@ function filter(_address, _stringArray) {
 }
 
 function generateListString(_score, _list) {
-  let listString = _list.join(",").toString();
+  let listString = _list.join(", ").toString();
   if(_list.length > 1){
-    listString = listString.substring(0, listString.lastIndexOf(",")) + " and " + 
-      listString.substring(listString.lastIndexOf(",") + 1, listString.length);
+    listString = listString.substring(0, listString.lastIndexOf(", ")) + " and" + 
+      listString.substring(listString.lastIndexOf(", ") + 1, listString.length);
   }
   return listString + " for a score of " + _score + ":";
 }
@@ -288,7 +288,7 @@ function startWorkers(_spinner, _string, _preci) {
           _spinner.text = "Ending Process";
           return;
         }
-        _spinner.text = "Searching for address number " + (accCount+1) + " of " + argv.n + " at a rate of " + 
+        _spinner.text = "Searching for address " + (accCount+1) + " of " + argv.n + " at a rate of " + 
           Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
           _spinner.start();
       }
@@ -299,7 +299,7 @@ function startWorkers(_spinner, _string, _preci) {
   }
 
   setInterval(() => {
-    _spinner.text = "Searching for address number " + (accCount+1) + " of " + argv.n + " at a rate of " + 
+    _spinner.text = "Searching for number " + (accCount+1) + " of " + argv.n + " at a rate of " + 
       Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
     lastGeneration = generationTotal;
     lastTime = Date.now();
