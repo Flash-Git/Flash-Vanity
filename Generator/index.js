@@ -194,8 +194,13 @@ function filter(_address, _stringArray) {
     if(argv.p){
       for(i = 0; i < _stringArray.length; i++){
         const entry = _stringArray[i].split("-");
-        if(address.includes(entry[0].toUpperCase())){
+        if(address.substring(2).includes(entry[0].toUpperCase())){
           list.push(entry[0]);
+          
+          if(address.substring(2).indexOf(entry[0].toUpperCase()) === 0){//Is at start
+            //score += 2;
+            list.push(entry[0]);//Efectively doubles points
+          }
           score += +entry[1];
         }
       }
@@ -207,7 +212,12 @@ function filter(_address, _stringArray) {
         }
       }
     }
-    if(score >= argv.c){
+    
+    if(list.length >= argv.p[1]){//if it's over this then add
+      score += argv.p[2] + list.length - argv.p[1] ;//this many points to score
+    }
+
+    if(score >= argv.c || list.length >= argv.p[0]){//if it's over this then always show regardless of score
       let listString = list.join(", ").toString();
       if(list.length > 1) {
         listString = listString.substring(0, listString.lastIndexOf(",")) + " and" + 
