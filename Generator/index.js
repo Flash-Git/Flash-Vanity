@@ -34,72 +34,22 @@ const argv = require("yargs")
   .alias("h", 'help')
   .argv;
 
-let accCount = 0;
-
 function run() {
   if(cluster.isMaster){
-    const string = cleanString();
-
-    if(!checkCommand(string)){
-      return;
-    }
-
-    console.log("\nSearching for addresses including" + (argv.c ? " " + argv.c + " of" : "") + " " + 
-      (string.split(" or ").length > 1 ? "either " : "") + string + "...\n");
-
-    const spinner = ora("Searching for address number " + accCount + " of " + argv.n + "...");
-    spinner.color = "cyan";
-    spinner.start();
-
-    let generationTotal = 0;
-    let lastGeneration = 0;
-    let lastTime = Date.now();
-
-    for(let i = 0; i < argv.t; i++) {
-      const worker_env = {
-        stringArray: string.split(" or ")
-      }
-      proc = cluster.fork(worker_env);
-      proc.on("message", message => {
-        if(message.msg){
-          if(accCount >= argv.n) {
-            return;
-          }
-          spinner.succeed(accCount+1 + ". In address " + generationTotal + ", found " + message.msg + "\n");
-          write(message.msg + "\n");
-          accCount++;
-          if(accCount >= argv.n) {
-            cleanup();
-            spinner.text = "Ending Process";
-            return;
-          }
-          spinner.text = "Searching for address number " + accCount + " of " + argv.n + " at a rate of " + 
-            Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
-          spinner.start();
-        }
-        if(message.incr){
-          generationTotal += 500;
-        }
-      });
-    }
-    
-    setInterval(() => {
-      spinner.text = "Searching for address number " + accCount + " of " + argv.n + " at a rate of " + 
-        Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
-      lastGeneration = generationTotal;
-      lastTime = Date.now();
-    }, argv.r);
+    masterRun();
   }else{
     generateAccounts(process.env.stringArray.split(","));
   }
 }
 
 function generateAccounts(_stringArray) {
+  //Total generated accounts
+  let accGened = 0;
   while(true){
     account = getNewAccount();
     const scoreMsg = filter(account.address, _stringArray);
-    accCount++;
-    if(accCount%500 === 499){
+    accGened++;
+    if(accGened%500 === 499){
       process.send({
         incr: true
       });
@@ -113,15 +63,157 @@ function generateAccounts(_stringArray) {
   }
 }
 
+function filter(_address, _stringArray) {
+  //Remove 0x
+  address = _address.substring(2).toUpperCase();
+
+  if(argv.c == "undefined"){
+    for(i = 0; i < _stringArray.length; i++){
+      if(address.includes(_stringArray[i].toUpperCase())){
+        return _stringArray[i];
+      }
+      if(isValidNum(address)){
+        return _stringArray[i];
+      }else if(isValidTxt(address)){
+        return _stringArray[i];
+      }
+    }
+    return false;
+  }
+
+  let score = 0;
+  
+  if(isValidNum(address)){
+    console.log("numby");
+    score += 20;
+  }else if(isValidTxt(address)){
+    console.log("texty");
+    score += 10;
+  }
+
+  let list = [];
+
+  //Count address score
+  if(argv.p){
+    [score, list] = checkWithP(address, _stringArray, score, list, process.env.preci.split(","));
+  }else{
+    [score, list] = checkWithoutP(address, _stringArray, score, list);
+  }
+
+  //Return if it passes score requirement
+  if(!passTally(score, list, argv.p ? process.env.preci.split(",")[0] : "")){
+    return false;
+  }
+  return generateListString(score, list);
+}
+
+function generateListString(_score, _list) {
+  let listString = _list.join(",").toString();
+  if(_list.length > 1){
+    listString = listString.substring(0, listString.lastIndexOf(",")) + " and " + 
+      listString.substring(listString.lastIndexOf(",") + 1, listString.length);
+  }
+  return listString + " for a score of " + _score + ":";
+}
+
+
+/*
+ * RUN MASTER
+ *
+*/
+
+function masterRun() {
+  //Clean -s
+  const string = cleanString();
+  const preci = cleanPreci();
+
+  if(!checkCommand(string)){
+    return;
+  }
+
+  console.log("\nSearching for addresses including" + (argv.c ? " " + argv.c + " of" : "") + " " + 
+    (string.split(" or ").length > 1 ? "either " : "") + string + "...\n");
+
+  const spinner = ora("Searching for address number " + 1 + " of " + argv.n + "...");
+  spinner.color = "cyan";
+  spinner.start();
+
+  startWorkers(spinner, string, preci);
+}
+
+
+/*
+ * ACCOUNT GENERATION
+ *
+*/
+
 function getNewAccount() {
   const privKey = crypto.randomBytes(32);
   const address = "0x" + ethUtils.privateToAddress(privKey).toString("hex");
   return { address, privKey: privKey.toString("hex") };
 }
 
+
+/*
+ * FILTER
+ *
+*/
+
+function checkWithP(address, _stringArray, _score, _list, _preci) {  
+  for(i = 0; i < _stringArray.length; i++){
+    const entry = _stringArray[i].split("-");
+    entry[1] = +entry[1];
+    if(address.includes(entry[0].toUpperCase())){//contains sub
+      _list.push(entry[0]);
+      
+      if(address.indexOf(entry[0].toUpperCase()) === 0){//Is at start
+        _score += entry[1];//doubles points
+      }
+      _score += entry[1];
+    }
+  }
+
+  //Increase score by -p [2] if there are enough vanity strings according to -p [1]
+  if(_list.length >= _preci[1]){
+    _score += (+_preci[2] + _list.length - _preci[1]);
+  }
+  return [_score, _list];
+}
+
+function checkWithoutP(_score, _list) {
+  for(i = 0; i < _stringArray.length; i++){
+    if(address.includes(_stringArray[i].toUpperCase())){
+      _list.push(_stringArray[i]);
+      _score++;
+    }
+  }
+  return [_score, _list];
+}
+
+function passTally(_score, _list, _vanityBar) {
+  if(_score < argv.c){
+    if(argv.p == "undefined"){
+      return false;
+    }else if(_list.length < _vanityBar){//Return if address passes contains at least -p[0] vanity strings
+      return false;
+    }
+  }
+  return true;
+}
+
+
+/*
+* RUN CLEANING AND CHECKS
+*
+*/
+
 function cleanString() {
   let string = argv.s.split(" ").join("");
-  return string = string.split(",").join(" or ");
+  return string.split(",").join(" or ");
+}
+
+function cleanPreci() {
+  return argv.p.split(" ").join("");
 }
 
 function checkCommand(_string) {
@@ -133,7 +225,6 @@ function checkCommand(_string) {
   if(!checkString(_string.split(" or "))){
     return false;
   }
-
   return true;
 }
 
@@ -164,67 +255,62 @@ function checkString(_stringArray) {
   return true;
 }
 
-function filter(_address, _stringArray) {
-  address = _address.substring(2).toUpperCase();
-  let list = [];
 
-  if(argv.c){
-    let score = 0;
+/*
+* FORK WORKER PROCESSES
+*
+*/
+
+function startWorkers(_spinner, _string, _preci) {
+  //Successfully generated addresses
+  let accCount = 0;
     
-    if(isValidNum(address)){
-      score += 20;
-    }else if(isValidTxt(address)){
-      score += 10;
-    }
+  let generationTotal = 0;
+  let lastGeneration = 0;
+  let lastTime = Date.now();
 
-    if(argv.p){
-      for(i = 0; i < _stringArray.length; i++){
-        const entry = _stringArray[i].split("-");
-        if(address.includes(entry[0].toUpperCase())){//contains sub
-          list.push(entry[0]);
-          
-          if(address.indexOf(entry[0].toUpperCase()) === 0){//Is at start
-            score += +entry[1];//doubles points
-          }
-          score += +entry[1];
+  for(let i = 0; i < argv.t; i++) {
+    const worker_env = {
+      stringArray: _string.split(" or "),
+      preci: _preci
+    }
+    proc = cluster.fork(worker_env);
+    proc.on("message", message => {
+      if(message.msg){
+        if(accCount >= argv.n) {
+          return;
         }
-      }
-    }else{
-      for(i = 0; i < _stringArray.length; i++){
-        if(address.includes(_stringArray[i].toUpperCase())){
-          list.push(_stringArray[i]);
-          score++;
+        _spinner.succeed(accCount+1 + ". In address " + generationTotal + ", found " + message.msg + "\n");
+        write(message.msg + "\n");
+        accCount++;
+        if(accCount >= argv.n) {
+          cleanup();
+          _spinner.text = "Ending Process";
+          return;
         }
+        _spinner.text = "Searching for address number " + (accCount+1) + " of " + argv.n + " at a rate of " + 
+          Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
+          _spinner.start();
       }
-    }
-    
-    if(list.length >= argv.p[1]){//if it's over this then add
-      score += argv.p[2] + list.length - argv.p[1] ;//this many points to score
-    }
-
-    if(score >= argv.c || list.length >= argv.p[0]){//if it's over this then always show regardless of score
-      let listString = list.join(", ").toString();
-      if(list.length > 1) {
-        listString = listString.substring(0, listString.lastIndexOf(",")) + " and" + 
-          listString.substring(listString.lastIndexOf(",") + 1, listString.length);
+      if(message.incr){
+        generationTotal += 500;
       }
-      return listString + " for a score of " + score + ":";
-    }
-    return false;
+    });
   }
 
-  for(i = 0; i < _stringArray.length; i++){
-    if(address.includes(_stringArray[i].toUpperCase())){
-      return _stringArray[i];
-    }
-    if(isValidNum(address)){
-      return _stringArray[i];
-    }else if(isValidTxt(address)){
-      return _stringArray[i];
-    }
-  }
-  return false;
+  setInterval(() => {
+    _spinner.text = "Searching for address number " + (accCount+1) + " of " + argv.n + " at a rate of " + 
+      Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
+    lastGeneration = generationTotal;
+    lastTime = Date.now();
+  }, argv.r);
 }
+
+
+/*
+* WRITE
+*
+*/
 
 function write(_account) {
   fs.appendFileSync("flash-vanity-" + argv.l +".txt", _account, (err) => {
@@ -235,20 +321,36 @@ function write(_account) {
   });
 }
 
+
+/*
+* REGEX
+*
+*/
+
 function isValidHex(_string) {
   let re = /^[0-9A-F]+$/g;
 	return re.test(_string.toUpperCase());
 }
 
 function isValidNum(_string) {
+  //console.log("num:" + _string + ":");
   let re = /^[0-9]+$/g;
+  //console.log(re.test(_string));
 	return re.test(_string);
 }
 
 function isValidTxt(_string) {
+  //console.log("txt:" + _string + ":");
   let re = /^[A-F]+$/g;
-	return re.test(_string.toUpperCase());
+  //console.log(re.test(_string));
+	return re.test(_string);
 }
+
+
+/*
+* END
+*
+*/
 
 function cleanup() {
   for(let id in cluster.workers){
