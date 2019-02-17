@@ -28,7 +28,6 @@ const argv = require("yargs")
   .alias('h', 'help')
   .argv;
 
-//const filteredAdds = [];
 let accCount = 0;
 
 function run() {
@@ -45,6 +44,10 @@ function run() {
     spinner.color = "cyan";
     spinner.start();
 
+    let generationTotal = 0;
+    let lastGeneration = 0;
+    let lastTime = Date.now();
+
     for(let i = 0; i < argv.t; i++) {
       const worker_env = {
         stringArray: string.split(" or ")
@@ -55,7 +58,7 @@ function run() {
           if(accCount >= argv.n) {
             return;
           }
-          spinner.succeed(accCount+1 + ". " + message.msg + "\n");
+          spinner.succeed(accCount+1 + ". In address " + generationTotal + ", found " + message.msg + "\n");
           write(message.msg + "\n");
           accCount++;
           if(accCount >= argv.n) {
@@ -63,16 +66,20 @@ function run() {
             spinner.text = "Ending Process";
             return;
           }
-          spinner.text = "Searching for address number " + (accCount+1) + " of " + argv.n + "...";
+          spinner.text = "Searching for address number " + accCount + " of " + argv.n + " at a rate of " + Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
           spinner.start();
+        }
+        if(message.incr){
+          generationTotal += 500;
         }
       });
     }
     
-    //TODO Count addresses per second
-    // setInterval(() => {
-    //   spinner.text = "Searching for address number " + accCount + " of " + argv.n + "...";
-    // }, 1000);
+    setInterval(() => {
+      spinner.text = "Searching for address number " + accCount + " of " + argv.n + " at a rate of " + Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
+      lastGeneration = generationTotal;
+      lastTime = Date.now();
+    }, 2500);
   }else{
     generateAccounts(process.env.stringArray.split(","));
   }
@@ -124,6 +131,12 @@ function generateAccounts(_stringArray) {
   while(true){
     account = getNewAccount();
     const scoreMsg = filter(account.address, _stringArray);
+    accCount++;
+    if(accCount%500 === 499){
+      process.send({
+        incr: true
+      });
+    }
     if(scoreMsg === false){
       continue;
     }
@@ -158,9 +171,10 @@ function filter(_address, _stringArray) {
     }
     if(score >= argv.p){
       let listString = list.join(", ").toString();
-      listString = listString.substring(0, listString.lastIndexOf(",")) + " and" + listString.substring(listString.lastIndexOf(",") + 1, listString.length);
-
-      return "Found " + listString + " for a score of "+ score +":";
+      if(list.length > 1) {
+        listString = listString.substring(0, listString.lastIndexOf(",")) + " and" + listString.substring(listString.lastIndexOf(",") + 1, listString.length);
+      }
+      return listString + " for a score of "+ score +":";
     }
     return false;
   }
