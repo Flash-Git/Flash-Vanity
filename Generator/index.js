@@ -13,7 +13,10 @@ const argv = require("yargs")
   .alias("s", "string")//TODO change to smth less dumb
   .describe("s", "String to find in addresses, supports multiple strings seperated by commas")
   .demandOption(["s"])
-  .describe("p", "Minimum number of required strings to find in each address")
+  .alias("p", "precision")
+  .describe("p", "toggle support for score after each string entry")
+  .alias("c", "combo")
+  .describe("c", "minimum number of required strings to find in each address")
   .default("l", Date.now())
   .alias("l", "log")
   .describe("l", "Adds logging to the specified filename")
@@ -27,8 +30,8 @@ const argv = require("yargs")
   .example("$0 -s '1337, b00b5' | Finds addresses containing either '1337' or 'b00b5'")
   .example("$0 -n 50 -s '1337' | Finds 50 addresses containing '1337'")
   .example("$0 -s '1337, b00b5' -p '2' | Finds addresses containing both '1337' and 'b00b5'")
-  .help('h')
-  .alias('h', 'help')
+  .help("h")
+  .alias("h", 'help')
   .argv;
 
 let accCount = 0;
@@ -41,7 +44,8 @@ function run() {
       return;
     }
 
-    console.log("\nSearching for addresses including" + (argv.p ? " " + argv.p + " of" : "") + " " + (string.split(" or ").length > 1 ? "either " : "") + string + "...\n");
+    console.log("\nSearching for addresses including" + (argv.c ? " " + argv.c + " of" : "") + " " + 
+      (string.split(" or ").length > 1 ? "either " : "") + string + "...\n");
 
     const spinner = ora("Searching for address number " + accCount + " of " + argv.n + "...");
     spinner.color = "cyan";
@@ -69,7 +73,8 @@ function run() {
             spinner.text = "Ending Process";
             return;
           }
-          spinner.text = "Searching for address number " + accCount + " of " + argv.n + " at a rate of " + Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
+          spinner.text = "Searching for address number " + accCount + " of " + argv.n + " at a rate of " + 
+            Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
           spinner.start();
         }
         if(message.incr){
@@ -79,7 +84,8 @@ function run() {
     }
     
     setInterval(() => {
-      spinner.text = "Searching for address number " + accCount + " of " + argv.n + " at a rate of " + Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
+      spinner.text = "Searching for address number " + accCount + " of " + argv.n + " at a rate of " + 
+        Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
       lastGeneration = generationTotal;
       lastTime = Date.now();
     }, argv.r);
@@ -91,7 +97,8 @@ function run() {
 function write(_account) {
   fs.appendFileSync("flash-vanity-" + argv.l +".txt", _account, (err) => {
     if(err){
-      throw(err);
+      console.log(err);
+      cleanup();
     }
   });
 }
@@ -110,11 +117,29 @@ function checkCommand(_string) {
   if(!checkString(_string.split(" or "))){
     return false;
   }
+
   return true;
 }
 
 function checkString(_stringArray) {
   for(i = 0; i < _stringArray.length; i++){
+    if(argv.p){
+      const entry = _stringArray[i].split("-");
+      if(entry.length !== 2){
+        console.log("Invalid entry length of " + entry + " at pos = [" + i + "]");
+        return false;
+      }
+      if(typeof(+entry[1]) !== "number"){
+        console.log("Invalid type of " + entry[1] + " at pos = [" + i + "]");
+        return false;
+      }
+      if(!isValidHex(entry[0])){
+        console.log("Invalid hex in " + entry[0] + " at pos = [" + i + "]");
+        return false;
+      }
+      continue;
+    }
+
     if(!isValidHex(_stringArray[i])){
       console.log("Invalid hex in " + _stringArray[i] + " at pos = [" + i + "]");
       return false;
@@ -162,29 +187,40 @@ function getNewAccount() {
 
 function filter(_address, _stringArray) {
   address = _address.toUpperCase();
-  
-  if(argv.p){
+  let list = [];
+
+  if(argv.c){
     let score = 0;
-    let list = [];
-    for(i = 0; i < _stringArray.length; i++){
-      if(address.includes(_stringArray[i].toUpperCase())){
-        list.push(_stringArray[i]);
-        score++;
+    if(argv.p){
+      for(i = 0; i < _stringArray.length; i++){
+        const entry = _stringArray[i].split("-");
+        if(address.includes(entry[0].toUpperCase())){
+          list.push(entry[0]);
+          score += +entry[1];
+        }
+      }
+    }else{
+      for(i = 0; i < _stringArray.length; i++){
+        if(address.includes(_stringArray[i].toUpperCase())){
+          list.push(_stringArray[i]);
+          score++;
+        }
       }
     }
-    if(score >= argv.p){
+    if(score >= argv.c){
       let listString = list.join(", ").toString();
       if(list.length > 1) {
-        listString = listString.substring(0, listString.lastIndexOf(",")) + " and" + listString.substring(listString.lastIndexOf(",") + 1, listString.length);
+        listString = listString.substring(0, listString.lastIndexOf(",")) + " and" + 
+          listString.substring(listString.lastIndexOf(",") + 1, listString.length);
       }
-      return listString + " for a score of "+ score +":";
+      return listString + " for a score of " + score + ":";
     }
     return false;
   }
 
   for(i = 0; i < _stringArray.length; i++){
     if(address.includes(_stringArray[i].toUpperCase())){
-      return true;
+      return _stringArray[i];
     }
   }
   return false;
