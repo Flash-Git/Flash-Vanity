@@ -179,6 +179,16 @@ function isValidHex(_string) {
 	return re.test(_string.toUpperCase());
 }
 
+function isValidNum(_string) {
+  let re = /^[0-9]+$/g;
+	return re.test(_string);
+}
+
+function isValidTxt(_string) {
+  let re = /^[A-F]+$/g;
+	return re.test(_string.toUpperCase());
+}
+
 function getNewAccount() {
   const privKey = crypto.randomBytes(32);
   const address = "0x" + ethUtils.privateToAddress(privKey).toString("hex");
@@ -186,20 +196,26 @@ function getNewAccount() {
 }
 
 function filter(_address, _stringArray) {
-  address = _address.toUpperCase();
+  address = _address.substring(2).toUpperCase();
   let list = [];
 
   if(argv.c){
     let score = 0;
+    
+    if(isValidNum(address)){
+      score += 20;
+    }else if(isValidTxt(address)){
+      score += 10;
+    }
+
     if(argv.p){
       for(i = 0; i < _stringArray.length; i++){
         const entry = _stringArray[i].split("-");
-        if(address.substring(2).includes(entry[0].toUpperCase())){
+        if(address.includes(entry[0].toUpperCase())){//contains sub
           list.push(entry[0]);
           
-          if(address.substring(2).indexOf(entry[0].toUpperCase()) === 0){//Is at start
-            //score += 2;
-            list.push(entry[0]);//Efectively doubles points
+          if(address.indexOf(entry[0].toUpperCase()) === 0){//Is at start
+            score += +entry[1];//doubles points
           }
           score += +entry[1];
         }
@@ -230,6 +246,11 @@ function filter(_address, _stringArray) {
 
   for(i = 0; i < _stringArray.length; i++){
     if(address.includes(_stringArray[i].toUpperCase())){
+      return _stringArray[i];
+    }
+    if(isValidNum(address)){
+      return _stringArray[i];
+    }else if(isValidTxt(address)){
       return _stringArray[i];
     }
   }
