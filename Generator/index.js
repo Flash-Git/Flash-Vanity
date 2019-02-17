@@ -94,13 +94,29 @@ function run() {
   }
 }
 
-function write(_account) {
-  fs.appendFileSync("flash-vanity-" + argv.l +".txt", _account, (err) => {
-    if(err){
-      console.log(err);
-      cleanup();
+function generateAccounts(_stringArray) {
+  while(true){
+    account = getNewAccount();
+    const scoreMsg = filter(account.address, _stringArray);
+    accCount++;
+    if(accCount%500 === 499){
+      process.send({
+        incr: true
+      });
     }
-  });
+    if(scoreMsg === false){
+      continue;
+    }
+    process.send({
+      msg: (scoreMsg + "\nID: " + process.pid + ", Address: " + account.address + ", Key: " + account.privKey)
+    });
+  }
+}
+
+function getNewAccount() {
+  const privKey = crypto.randomBytes(32);
+  const address = "0x" + ethUtils.privateToAddress(privKey).toString("hex");
+  return { address, privKey: privKey.toString("hex") };
 }
 
 function cleanString() {
@@ -146,53 +162,6 @@ function checkString(_stringArray) {
     }
   }
   return true;
-}
-
-function cleanup() {
-  for(let id in cluster.workers){
-    cluster.workers[id].process.kill();
-  }
-  process.exit();
-}
-
-function generateAccounts(_stringArray) {
-  while(true){
-    account = getNewAccount();
-    const scoreMsg = filter(account.address, _stringArray);
-    accCount++;
-    if(accCount%500 === 499){
-      process.send({
-        incr: true
-      });
-    }
-    if(scoreMsg === false){
-      continue;
-    }
-    process.send({
-      msg: (scoreMsg + "\nID: " + process.pid + ", Address: " + account.address + ", Key: " + account.privKey)
-    });
-  }
-}
-
-function isValidHex(_string) {
-  let re = /^[0-9A-F]+$/g;
-	return re.test(_string.toUpperCase());
-}
-
-function isValidNum(_string) {
-  let re = /^[0-9]+$/g;
-	return re.test(_string);
-}
-
-function isValidTxt(_string) {
-  let re = /^[A-F]+$/g;
-	return re.test(_string.toUpperCase());
-}
-
-function getNewAccount() {
-  const privKey = crypto.randomBytes(32);
-  const address = "0x" + ethUtils.privateToAddress(privKey).toString("hex");
-  return { address, privKey: privKey.toString("hex") };
 }
 
 function filter(_address, _stringArray) {
@@ -255,6 +224,37 @@ function filter(_address, _stringArray) {
     }
   }
   return false;
+}
+
+function write(_account) {
+  fs.appendFileSync("flash-vanity-" + argv.l +".txt", _account, (err) => {
+    if(err){
+      console.log(err);
+      cleanup();
+    }
+  });
+}
+
+function isValidHex(_string) {
+  let re = /^[0-9A-F]+$/g;
+	return re.test(_string.toUpperCase());
+}
+
+function isValidNum(_string) {
+  let re = /^[0-9]+$/g;
+	return re.test(_string);
+}
+
+function isValidTxt(_string) {
+  let re = /^[A-F]+$/g;
+	return re.test(_string.toUpperCase());
+}
+
+function cleanup() {
+  for(let id in cluster.workers){
+    cluster.workers[id].process.kill();
+  }
+  process.exit();
 }
 
 process.stdin.resume();
