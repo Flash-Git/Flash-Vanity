@@ -38,7 +38,7 @@ class Form extends Component {
   render(){
     return(
       <div id="section-form" className="section" style={ formStyle }>
-        <button onClick={ this.onClickGenerateRandom } style={ btnStyle }>Generate Random</button>
+        <button onClick={ this.onClickGenerate } style={ btnStyle }>Generate Random</button>
         <button onClick={ this.onClickImport } style={ btnStyle }>Import</button>
         {/* Display Form that updates a command string to get desired flash-vanity address out of generator  */}
       </div>
