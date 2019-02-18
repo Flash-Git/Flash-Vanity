@@ -43,11 +43,18 @@ function run() {
 }
 
 function generateAccounts(_stringArray) {
+  if(argv.p){
+    for(let i=0; i<_stringArray.length; i++){
+      _stringArray[i] = _stringArray[i].split("-");
+      _stringArray[i][1] = +_stringArray[i][1];
+    }
+  }
+
   //Total generated accounts
   let accGened = 0;
   while(true){
     account = getNewAccount();
-    const scoreMsg = filter(account.address, _stringArray,  argv.p ? process.env.preci.split(",") : "");
+    const scoreMsg = filter(account.address, _stringArray,  argv.p ? process.env.preci.split(",") : [""]);
     accGened++;
     if(accGened%500 === 499){
       process.send({
@@ -81,26 +88,25 @@ function filter(_address, _stringArray, _preci) {
     return false;
   }
 
-  let score = 0;
-  
+  let score = 0;  
+  let list = [];
+
   if(isValidNum(address)){
     score += 10;
   }else if(isValidTxt(address)){
     score += 20;
-  }
-
-  let list = [];
-
-  //Count address score
-  if(argv.p){
-    [score, list] = checkWithP(address, _stringArray, score, list, _preci);
   }else{
-    [score, list] = checkWithoutP(address, _stringArray, score, list);
-  }
+    //Count address score
+    if(argv.p){
+      [score, list] = checkWithP(address, _stringArray, score, list, _preci);
+    }else{
+      [score, list] = checkWithoutP(address, _stringArray, score, list);
+    }
 
-  //Return if it passes score requirement
-  if(!passTally(score, list, argv.p ? _preci[0] : "")){
-    return false;
+    //Return if it passes score requirement
+    if(!passTally(score, list, _preci[0])){
+      return false;
+    }
   }
   return generateListString(score, list);
 }
@@ -157,17 +163,20 @@ function getNewAccount() {
  *
 */
 
-function checkWithP(address, _stringArray, _score, _list, _preci) {  
+function checkWithP(address, _stringArray, _score, _list, _preci) { 
+  let checkedStart = false; 
   for(i = 0; i < _stringArray.length; i++){
-    const entry = _stringArray[i].split("-");
-    entry[1] = +entry[1];
-    if(address.includes(entry[0])){//contains sub
-      _list.push(entry[0]);
-      
-      if(address.indexOf(entry[0]) === 0){//Is at start of address
-        _score += entry[1];//doubles points
+    if(address.includes(_stringArray[i][0])){//contains sub
+      _list.push(_stringArray[i][0]);
+
+      if(!checkedStart){//TODO test whether or not this actually boosts performance
+        if(address.indexOf(_stringArray[i][0]) === 0){//Is at start of address
+          _score += 2 * _stringArray[i][1];//doubles points
+          checkedStart = true;
+          continue;
+        }
       }
-      _score += entry[1];
+      _score += _stringArray[i][1];
     }
   }
 
@@ -331,17 +340,19 @@ function isValidHex(_string) {
 }
 
 function isValidNum(_string) {
-  //console.log("num:" + _string + ":");
   let re = /^[0-9]+$/g;
-  //console.log(re.test(_string));
-	return re.test(_string);
+  if(!re.test(_string.substring(0, 5))){
+    return false;
+  }
+	return re.test(_string.substring(5));
 }
 
 function isValidTxt(_string) {
-  //console.log("txt:" + _string + ":");
   let re = /^[a-f]+$/g;
-  //console.log(re.test(_string));
-	return re.test(_string);
+  if(!re.test(_string.substring(0, 5))){//TODO test whether or not this actually boosts performance
+    return false;
+  }
+	return re.test(_string.substring(5));
 }
 
 
