@@ -142,6 +142,9 @@ function masterRun() {
   spinner.color = "cyan";
   spinner.start();
 
+  write("Searching for addresses including" + (argv.c ? " " + argv.c + " of" : "") + " " + 
+  (string.split(" or ").length > 1 ? "either " : "") + string + "...\n");
+
   startWorkers(spinner, string, preci);
 }
 
@@ -288,7 +291,7 @@ function startWorkers(_spinner, _string, _preci) {
           return;
         }
         _spinner.succeed(accCount+1 + ". In address " + generationTotal + ", found " + message.msg + "\n");
-        write(message.msg + "\n");
+        write(accCount+1 + ". In address " + generationTotal + ", found " + message.msg + "\n");
         accCount++;
         if(accCount >= argv.n) {
           cleanup();
