@@ -47,7 +47,7 @@ function generateAccounts(_stringArray) {
   let accGened = 0;
   while(true){
     account = getNewAccount();
-    const scoreMsg = filter(account.address, _stringArray);
+    const scoreMsg = filter(account.address, _stringArray,  argv.p ? process.env.preci.split(",") : "");
     accGened++;
     if(accGened%500 === 499){
       process.send({
@@ -63,13 +63,13 @@ function generateAccounts(_stringArray) {
   }
 }
 
-function filter(_address, _stringArray) {
+function filter(_address, _stringArray, _preci) {
   //Remove 0x
-  address = _address.substring(2).toUpperCase();
+  address = _address.substring(2);
 
   if(argv.c == "undefined"){
     for(i = 0; i < _stringArray.length; i++){
-      if(address.includes(_stringArray[i].toUpperCase())){
+      if(address.includes(_stringArray[i])){
         return _stringArray[i];
       }
       if(isValidNum(address)){
@@ -84,10 +84,8 @@ function filter(_address, _stringArray) {
   let score = 0;
   
   if(isValidNum(address)){
-    console.log("numby");
     score += 10;
   }else if(isValidTxt(address)){
-    console.log("texty");
     score += 20;
   }
 
@@ -95,13 +93,13 @@ function filter(_address, _stringArray) {
 
   //Count address score
   if(argv.p){
-    [score, list] = checkWithP(address, _stringArray, score, list, process.env.preci.split(","));
+    [score, list] = checkWithP(address, _stringArray, score, list, _preci);
   }else{
     [score, list] = checkWithoutP(address, _stringArray, score, list);
   }
 
   //Return if it passes score requirement
-  if(!passTally(score, list, argv.p ? process.env.preci.split(",")[0] : "")){
+  if(!passTally(score, list, argv.p ? _preci[0] : "")){
     return false;
   }
   return generateListString(score, list);
@@ -163,10 +161,10 @@ function checkWithP(address, _stringArray, _score, _list, _preci) {
   for(i = 0; i < _stringArray.length; i++){
     const entry = _stringArray[i].split("-");
     entry[1] = +entry[1];
-    if(address.includes(entry[0].toUpperCase())){//contains sub
+    if(address.includes(entry[0])){//contains sub
       _list.push(entry[0]);
       
-      if(address.indexOf(entry[0].toUpperCase()) === 0){//Is at start
+      if(address.indexOf(entry[0]) === 0){//Is at start of address
         _score += entry[1];//doubles points
       }
       _score += entry[1];
@@ -182,7 +180,7 @@ function checkWithP(address, _stringArray, _score, _list, _preci) {
 
 function checkWithoutP(_score, _list) {
   for(i = 0; i < _stringArray.length; i++){
-    if(address.includes(_stringArray[i].toUpperCase())){
+    if(address.includes(_stringArray[i])){
       _list.push(_stringArray[i]);
       _score++;
     }
@@ -209,11 +207,11 @@ function passTally(_score, _list, _vanityBar) {
 
 function cleanString() {
   let string = argv.s.split(" ").join("");
-  return string.split(",").join(" or ");
+  return string.toLowerCase().split(",").join(" or ");
 }
 
 function cleanPreci() {
-  return argv.p.split(" ").join("");
+  return argv.p.toLowerCase().split(" ").join("");
 }
 
 function checkCommand(_string) {
@@ -328,8 +326,8 @@ function write(_account) {
 */
 
 function isValidHex(_string) {
-  let re = /^[0-9A-F]+$/g;
-	return re.test(_string.toUpperCase());
+  let re = /^[0-9a-f]+$/g;
+	return re.test(_string);
 }
 
 function isValidNum(_string) {
@@ -341,7 +339,7 @@ function isValidNum(_string) {
 
 function isValidTxt(_string) {
   //console.log("txt:" + _string + ":");
-  let re = /^[A-F]+$/g;
+  let re = /^[a-f]+$/g;
   //console.log(re.test(_string));
 	return re.test(_string);
 }
@@ -361,8 +359,8 @@ function cleanup() {
 
 process.stdin.resume();
 
-process.on('exit', cleanup.bind(null, {}));
-process.on('SIGINT', cleanup.bind(null, {}));
-process.on('uncaughtException', cleanup.bind(null, {}));
+process.on("exit", cleanup.bind(null, {}));
+process.on("SIGINT", cleanup.bind(null, {}));
+process.on("uncaughtException", cleanup.bind(null, {}));
 
 run();
