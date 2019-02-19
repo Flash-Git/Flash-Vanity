@@ -14,7 +14,7 @@ const argv = require("yargs")
   .describe("s", "String to find in addresses, supports multiple strings seperated by commas")
   .demandOption(["s"])
   .alias("p", "precision")
-  .describe("p", "toggle support for score after each string entry")
+  .describe("p", "Toggle support for score after each string entry")
   .alias("c", "combo")
   .describe("c", "minimum number of required strings to find in each address")
   .default("l", Date.now())
@@ -22,10 +22,12 @@ const argv = require("yargs")
   .describe("l", "Adds logging to the specified filename")
   .default("t", numCPUs)
   .alias("t", "threads")
-  .describe("r", "refresh time on spinner in ms")
+  .describe("t", "Number of threads to spawn")
   .default("r", 5000)
   .alias("r", "refreshTime")
-  .describe("t", "Number of threads to spawn")
+  .describe("r", "Sets refresh time on spinner in ms")
+  .alias("a", "similar")
+  .describe("a", "Toggle similar string matches")
   .example("$0 -s '1337' | Finds addresses containing '1337'")
   .example("$0 -s '1337, b00b5' | Finds addresses containing either '1337' or 'b00b5'")
   .example("$0 -n 50 -s '1337' | Finds 50 addresses containing '1337'")
@@ -93,8 +95,8 @@ function filter(_address, _stringArray, _preci) {
 
   if(isValidNum(address)){
     score += 10;
-  }else if(isValidTxt(address)){
-    score += 20;
+  }else if(isValidTxt(address)){//At 50 addresses per seonc, it will take an average of 69338 years for this to be true
+    score += 1000000000000000000;
   }else{
     //Count address score
     if(argv.p){
@@ -129,10 +131,21 @@ function generateListString(_score, _list) {
 function masterRun() {
   //Clean -s
   const string = cleanString();
-  const preci = cleanPreci();
+  let preci;
+
+  if(argv.p){
+    preci = cleanPreci();
+  }
 
   if(!checkCommand(string)){
     return;
+  }
+
+  if(argv.a){
+    string = genSimilars(string);
+    console.log("INCOMING");
+    console.log(string);
+    exit(0);
   }
 
   console.log("\nSearching for addresses including" + (argv.c ? " " + argv.c + " of" : "") + " " + 
@@ -148,6 +161,85 @@ function masterRun() {
   startWorkers(spinner, string, preci);
 }
 
+String.prototype.replaceAt = function(index, replacement) {
+  return this.substr(0, index) + replacement+ this.substr(index+1);
+}
+
+function genSimilars(_string) {
+  /*let stringArray = _string.split(" or ");
+  console.log("string array:" + stringArray);
+  let list = [];
+
+  for(let i = 0; i < stringArray.length; i++){
+    stringArray[i] = stringArray[i].split("-");
+    console.log("stringArray[" + i + "] " + stringArray[i]);
+
+    // const aNum = count(stringArray[i][0], "a");
+    // const eNum = count(stringArray[i][0], "e");
+    // console.log("aNum: " + aNum + ", eNum: " + eNum);
+    list.push(stringArray[i][0]);
+  
+    let newString = stringArray[i][0];
+    console.log("newString: " + newString);
+    */
+
+  const newString = "atee";
+  const aeList = [];
+  for(let i = 0; i < newString.length; i++){
+    if(newString[i] === "a"){
+      aeList.push(["a", i]);
+    } else if(newString[i] === "e"){
+      aeList.push(["e", i]);
+    }
+  }
+  const aeList2 = [["a", 0], ["e", 2], ["e", 3]];
+  console.log("1: " + aeList + ", 2: " + aeList2); 
+  const aeLength = aeList.length;
+  gen(newString, aeList, 0);
+}
+
+
+
+function gen(_string, _aeList, _index){
+  let lastA = [_string.lastIndexOf("a"), "a"];
+  let lastE = [_string.lastIndexOf("e"), "e"];
+  if(lastA === lastE){
+    return;
+  }
+  _aeList.push(lastA[0] > lastE[0] ? lastA : lastE);
+  gen(_string, _aeList, _index++);
+}
+
+    
+    // let k = 0;
+    // while(k < 1){
+    //   console.log("k: " + k);
+    //   console.log("newString: " + newString);
+    //   let j =  0;
+    //   while(j < 1){
+    //     console.log("newString: " + newString);
+    //     const eIndex = newString.indexOf("e");
+    //     //j = eIndex;
+    //     console.log("eIndex " + eIndex);
+    //     if(eIndex === -1){
+    //       break;
+    //     }
+    //     newString = newString.replaceAt(eIndex, "3");
+    //     list.push(newString);
+    //   }
+    //   const aIndex = newString.indexOf("a");
+    //   if(aIndex === -1){
+    //     break;
+    //   }
+    //   //k = aIndex;
+    //   console.log("aIndex " + aIndex);
+    //   newString = newString.replaceAt(aIndex, "4");
+    //   list.push(newString);
+    // }
+    //stringArray[i][0] = list;
+  //}
+  //return(stringArray.join("-"));
+//}
 
 /*
  * ACCOUNT GENERATION
@@ -166,21 +258,23 @@ function getNewAccount() {
  *
 */
 
-function checkWithP(address, _stringArray, _score, _list, _preci) { 
+function checkWithP(_address, _stringArray, _score, _list, _preci) { 
   let checkedStart = false; 
   for(i = 0; i < _stringArray.length; i++){
-    if(address.includes(_stringArray[i][0])){//contains sub
-      _list.push(_stringArray[i][0]);
-
-      if(!checkedStart){//TODO test whether or not this actually boosts performance
-        if(address.indexOf(_stringArray[i][0]) === 0){//Is at start of address
-          _score += 2 * _stringArray[i][1];//doubles points
-          checkedStart = true;
-          continue;
-        }
-      }
-      _score += _stringArray[i][1];
+    const included = checkIncludes(_address, _stringArray[i][0]);
+    if(included === false){
+      continue;
     }
+    _list.push(included);
+
+    if(!checkedStart){//TODO test whether or not this actually boosts performance
+      if(_address.indexOf(included) === 0){//Is at start of address
+        _score += 2 * _stringArray[i][1];//doubles points
+        checkedStart = true;
+        continue;
+      }
+    }
+    _score += _stringArray[i][1];
   }
 
   //Increase score by -p [2] if there are enough vanity strings according to -p [1]
@@ -188,6 +282,25 @@ function checkWithP(address, _stringArray, _score, _list, _preci) {
     _score += (+_preci[2] + _list.length - _preci[1]);
   }
   return [_score, _list];
+}
+
+
+function count(_string, _char) {
+  const re = new RegExp(_char, "gi");
+  return _string.match(re).length;
+ }
+
+function checkIncludes(_address, _string) {
+
+  if(argv.a){
+
+
+    return false;
+  }
+  if(address.includes(_string)){//contains sub
+    return _string;
+  }
+  return false;
 }
 
 function checkWithoutP(_score, _list) {
