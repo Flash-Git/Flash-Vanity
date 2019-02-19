@@ -187,30 +187,87 @@ function genSimilars(_string) {
   const aeList = [];
   for(let i = 0; i < newString.length; i++){
     if(newString[i] === "a"){
-      aeList.push(["a", i]);
+      aeList.push(["a", "a", "4", i]);
     } else if(newString[i] === "e"){
-      aeList.push(["e", i]);
+      aeList.push(["e", "e", "3", i]);
     }
   }
-  const aeList2 = [["a", 0], ["e", 2], ["e", 3]];
-  console.log("1: " + aeList + ", 2: " + aeList2); 
-  const aeLength = aeList.length;
-  gen(newString, aeList, 0);
+  console.log("1: " + aeList[1]);
+  //I imcrement through the possibilities in the same way that you increment base 2 numbers
+  const newList = gen(aeList.reverse(), 1, []);
+  console.log(newList.reverse());
 }
 
-
-
-function gen(_string, _aeList, _index){
-  let lastA = [_string.lastIndexOf("a"), "a"];
-  let lastE = [_string.lastIndexOf("e"), "e"];
-  if(lastA === lastE){
-    return;
+function gen(_aeList, _index, _newList){
+  if(_index === _aeList.length){
+    return _newList;
   }
-  _aeList.push(lastA[0] > lastE[0] ? lastA : lastE);
-  gen(_string, _aeList, _index++);
+  if(_aeList[_index][0] ===_aeList[_index][2]){
+    console.log("Beep");
+    gen(_aeList, _index++, _newList);
+  }else{
+    //size of active bits in list increases by one
+    const numOf0 = Math.log2(_index);
+    //Flip bits back to original value
+    for(let i = 0; i < numOf0; i++){
+      _aeList[i][0] = _aeList[i][1];
+    }
+    //Flip next bit to new value
+    _aeList[numOf0][0] = _aeList[numOf0][2]; 
+    _newList.push(_aeList);
+    console.log("List: " + _aeList);
+    gen(_aeList, 1, _newList);
+  }
 }
 
-    
+
+
+//const newList = gen(aeList.reverse(), 1, 0, []);
+
+// //starts at 1
+// function gen(_aeList, _index, _lastPow2, _newList){
+//   const isPow2 = Number.isInteger(Math.pow(_index, 0.5));//check
+//   //const isPow2 = Math.pow(_index, 0.5).isInteger();//check
+
+//   //size of active bits in list increases by one
+//   if(isPow2){
+//     const numOf0 = Math.log2(_index)
+//     //Flip bits back to original value
+//     for(let i = 0; i < numOf0; i++){
+//       _aeList[i][0] = _aeList[i][1];
+//     }
+//     //Flip next bit to new value
+//     _aeList[numOf0][0] = _aeList[numOf0][2]; 
+//     _newList.push(_aeList);
+//     _lastPow2 = _index;
+//   }else{
+//     const sincePow2 = _index - _lastPow2;
+//     if(sincePow2===1){
+//       aeList[sincePow2-1][0] = aeList[sincePow2-1][2];
+//     }
+//   }
+// 5 = 101
+// 6 = 110
+// 2 away
+// [1][0]
+
+
+//   _index++;
+// }
+
+
+// function gen(_string, _aeList, _index){
+//   let lastA = [_string.lastIndexOf("a"), "a"];
+//   let lastE = [_string.lastIndexOf("e"), "e"];
+//   if(lastA === lastE){
+//     return _aeList;
+//   }
+//   _aeList.push(lastA[0] > lastE[0] ? lastA : lastE);
+//   gen(_string, _aeList, _index++);
+// }
+
+
+
     // let k = 0;
     // while(k < 1){
     //   console.log("k: " + k);
@@ -240,6 +297,7 @@ function gen(_string, _aeList, _index){
   //}
   //return(stringArray.join("-"));
 //}
+
 
 /*
  * ACCOUNT GENERATION
