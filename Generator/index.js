@@ -188,17 +188,15 @@ function genSimilars(_string) {
       aeList.push(["e", "e", "3", i]);
     }
   }
-  //I imcrement through the possibilities in the same way that you increment base 2 numbers
+  //Imcrement through the possibilities in the same way that you increment base 2 numbers
   const newList = gen(aeList, 0, []);
   const completeList = [newString];
   
   for(let i = 0; i < newList.length; i++){
     const aeWordList = newList[i];
-    //console.log("aeWordList: newList["+i+"]: " + newList[i]);
     let string = newString;
     for(let j = 0; j < aeWordList.length; j++){
       const aeLetterList = aeWordList[j];
-      //console.log("aeLetterList: aeWordList["+j+"]: " + aeWordList[j]);
       string = string.replaceAt(aeLetterList[3], aeLetterList[0]);
     }
     completeList.push(string);
@@ -400,7 +398,7 @@ function startWorkers(_spinner, _string, _preci) {
   let lastGeneration = 0;
   let lastTime = Date.now();
 
-  for(let i = 0; i < argv.t; i++) {
+  for(let i = 0; i < argv.t; i++){
     const worker_env = {
       stringArray: _string.split(" or "),
       preci: _preci
@@ -408,13 +406,13 @@ function startWorkers(_spinner, _string, _preci) {
     proc = cluster.fork(worker_env);
     proc.on("message", message => {
       if(message.msg){
-        if(accCount >= argv.n) {
+        if(accCount >= argv.n){
           return;
         }
         _spinner.succeed(accCount+1 + ". In address " + generationTotal + ", found " + message.msg + "\n");
         write(accCount+1 + ". In address " + generationTotal + ", found " + message.msg + "\n");
         accCount++;
-        if(accCount >= argv.n) {
+        if(accCount >= argv.n){
           cleanup();
           _spinner.text = "Ending Process";
           return;
@@ -427,6 +425,7 @@ function startWorkers(_spinner, _string, _preci) {
         generationTotal += 500;
       }
     });
+
   }
 
   setInterval(() => {
@@ -499,4 +498,3 @@ process.on("SIGINT", cleanup.bind(null, {}));
 process.on("uncaughtException", cleanup.bind(null, {}));
 
 run();
-console.log("SORCERY? : " + i);
