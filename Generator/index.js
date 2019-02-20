@@ -194,29 +194,38 @@ function genSimilars(_string) {
   }
   console.log("1: " + aeList[1]);
   //I imcrement through the possibilities in the same way that you increment base 2 numbers
-  const newList = gen(aeList.reverse(), 1, []);
-  console.log(newList.reverse());
+  const newList = gen(aeList.reverse(), 0, []).reverse();
 }
 
 function gen(_aeList, _index, _newList){
+  console.log("index: " + _index);
   if(_index === _aeList.length){
+    console.log("exiting " + _newList);
     return _newList;
   }
   if(_aeList[_index][0] ===_aeList[_index][2]){
-    console.log("Beep");
-    gen(_aeList, _index++, _newList);
+    // console.log("Beep");
+    _index+=1;
+    return gen(_aeList, _index, _newList);
   }else{
-    //size of active bits in list increases by one
-    const numOf0 = Math.log2(_index);
-    //Flip bits back to original value
-    for(let i = 0; i < numOf0; i++){
-      _aeList[i][0] = _aeList[i][1];
+    if(_index == 0){
+      _newList.push(_aeList);
+      console.log("List: " + _aeList);
+      return gen(_aeList, 1, _newList);
+    }else{
+      //size of active bits in list increases by one
+
+      //Flip bits back to original value
+      for(let i = 0; i < _index; i++){
+        _aeList[i][0] = _aeList[i][1];
+      }
+
+      //Flip next bit to new value
+      _aeList[_index][0] = _aeList[_index][2]; 
+      _newList.push(_aeList);
+      console.log("List: " + _aeList);
+      return gen(_aeList, 0, _newList);
     }
-    //Flip next bit to new value
-    _aeList[numOf0][0] = _aeList[numOf0][2]; 
-    _newList.push(_aeList);
-    console.log("List: " + _aeList);
-    gen(_aeList, 1, _newList);
   }
 }
 
