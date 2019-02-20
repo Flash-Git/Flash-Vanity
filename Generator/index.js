@@ -164,6 +164,7 @@ function masterRun() {
 String.prototype.replaceAt = function(index, replacement) {
   return this.substr(0, index) + replacement+ this.substr(index+1);
 }
+console.log("i: " + i);
 
 function genSimilars(_string) {
   /*let stringArray = _string.split(" or ");
@@ -195,6 +196,21 @@ function genSimilars(_string) {
   console.log("1: " + aeList[1]);
   //I imcrement through the possibilities in the same way that you increment base 2 numbers
   const newList = gen(aeList.reverse(), 0, []).reverse();
+  const completeList = [newString];
+  
+  for(let i = 0; i < newList.length; i++){
+    console.log("newList.length: " + newList.length);
+    let string = newString;
+    console.log("newList[i].length: " + newList[i].length);
+    for(let j = 0; j < newList[i].length; j++){//aeList
+      console.log("newList[" + i + "]: " + newList[i]);
+      //string = string.replaceAt(newList[i][aeList[j][3]][0], aeList[j][3]);
+      console.log("string: " + string);
+    }
+    completeList.push(string);
+  }
+
+  console.log(completeList);
 }
 
 function gen(_aeList, _index, _newList){
@@ -221,7 +237,9 @@ function gen(_aeList, _index, _newList){
       }
 
       //Flip next bit to new value
-      _aeList[_index][0] = _aeList[_index][2]; 
+      _aeList[_index][0] = _aeList[_index][2];
+      console.log("i: " + i);
+      console.log("_aeList["+ _index +"][0]: " + _aeList[_index][0]);
       _newList.push(_aeList);
       console.log("List: " + _aeList);
       return gen(_aeList, 0, _newList);
