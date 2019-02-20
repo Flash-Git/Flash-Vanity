@@ -130,24 +130,31 @@ function generateListString(_score, _list) {
 
 function masterRun() {
   //Clean -s
-  const string = cleanString();
+  let string = cleanString();
   let preci;
 
   if(argv.p){
     preci = cleanPreci();
+
+    //turns string from ["stringA-2", "stringB-4"]
+    //             into [["stringA1","stringA2", "-2"], ["stringB1","stringB2", "-4"]]
+    if(argv.a){
+
+      const stringList = string.split(" or ");
+      for(let i = 0; i < stringList.length; i++){
+        const split = stringList[i].split("-");
+        const genArray = genSimilars(split[0]);
+        stringList[i] = genArray.join("|") + "-" + split[1];
+      }
+      string = stringList.join(" or ");
+      console.log(string);
+    }  
   }
 
   if(!checkCommand(string)){
     return;
   }
-
-  if(argv.a){
-    string = genSimilars(string);
-    console.log("INCOMING");
-    console.log(string);
-    exit(0);
-  }
-
+  
   console.log("\nSearching for addresses including" + (argv.c ? " " + argv.c + " of" : "") + " " + 
     (string.split(" or ").length > 1 ? "either " : "") + string + "...\n");
 
@@ -166,7 +173,7 @@ String.prototype.replaceAt = function(index, replacement) {
 }
 
 function genSimilars(_string) {
-  const newString = "atee";
+  const newString = _string;
   const aeList = [];
   for(let i = 0; i < newString.length; i++){
     if(newString[i] === "a"){
@@ -177,7 +184,6 @@ function genSimilars(_string) {
   }
   //I imcrement through the possibilities in the same way that you increment base 2 numbers
   const newList = gen(aeList, 0, []);
-  console.log(newList);
   const completeList = [newString];
   
   for(let i = 0; i < newList.length; i++){
@@ -320,17 +326,37 @@ function checkCommand(_string) {
     console.log("Invalid number: " + argv.n);
     return false;
   }
-
-  if(!checkString(_string.split(" or "))){
+  if(argv.a){
+    const sizeableLad = _string.split(" or ");
+    for(let i = 0; i < sizeableLad.length; i++){
+      if(!checkString(sizeableLad[i].split("|"))){
+        return false;
+      }
+    }
+  }else if(!checkString(_string.split(" or "))){
     return false;
   }
   return true;
 }
 
 function checkString(_stringArray) {
+  let entryScore;
+  if(argv.a){
+    entryScore = _stringArray[_stringArray.length-1].split("-")[1];
+  }
+  
   for(let i = 0; i < _stringArray.length; i++){
     if(argv.p){
-      const entry = _stringArray[i].split("-");
+      let entry = [];
+      if(argv.a){
+        if(i == _stringArray.length-1){
+          entry = [_stringArray[i].split("-")[0], entryScore];
+        }else{
+          entry = [_stringArray[i], entryScore];
+        }
+      }else{
+        entry = _stringArray[i].split("-");
+      }
       if(entry.length !== 2){
         console.log("Invalid entry length of " + entry + " at pos = [" + i + "]");
         return false;
