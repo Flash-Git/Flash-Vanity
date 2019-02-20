@@ -164,25 +164,9 @@ function masterRun() {
 String.prototype.replaceAt = function(index, replacement) {
   return this.substr(0, index) + replacement+ this.substr(index+1);
 }
-console.log("i: " + i);
 
 function genSimilars(_string) {
-  /*let stringArray = _string.split(" or ");
-  console.log("string array:" + stringArray);
-  let list = [];
-
-  for(let i = 0; i < stringArray.length; i++){
-    stringArray[i] = stringArray[i].split("-");
-    console.log("stringArray[" + i + "] " + stringArray[i]);
-
-    // const aNum = count(stringArray[i][0], "a");
-    // const eNum = count(stringArray[i][0], "e");
-    // console.log("aNum: " + aNum + ", eNum: " + eNum);
-    list.push(stringArray[i][0]);
-  
-    let newString = stringArray[i][0];
-    console.log("newString: " + newString);
-    */
+  console.log("SORCERY? : " + i);
 
   const newString = "atee";
   const aeList = [];
@@ -193,9 +177,10 @@ function genSimilars(_string) {
       aeList.push(["e", "e", "3", i]);
     }
   }
-  console.log("1: " + aeList[1]);
+  //console.log("1: " + aeList[1]);
   //I imcrement through the possibilities in the same way that you increment base 2 numbers
   const newList = gen(aeList.reverse(), 0, []).reverse();
+  console.log(newList);
   const completeList = [newString];
   
   for(let i = 0; i < newList.length; i++){
@@ -213,39 +198,85 @@ function genSimilars(_string) {
   console.log(completeList);
 }
 
-function gen(_aeList, _index, _newList){
-  console.log("index: " + _index);
-  if(_index === _aeList.length){
-    console.log("exiting " + _newList);
-    return _newList;
+function gen(_aeList, _index, _newList) {
+  newList = _newList.slice(0);
+  aeList = _aeList.slice(0);
+  //console.log("_aeList: " + _aeList);
+  //console.log("_index: " + _index);
+  //console.log("_newList: " + _newList);
+
+  if(_index === aeList.length){
+      return newList;
   }
-  if(_aeList[_index][0] ===_aeList[_index][2]){
-    // console.log("Beep");
-    _index+=1;
-    return gen(_aeList, _index, _newList);
-  }else{
-    if(_index == 0){
-      _newList.push(_aeList);
-      console.log("List: " + _aeList);
-      return gen(_aeList, 1, _newList);
-    }else{
-      //size of active bits in list increases by one
 
-      //Flip bits back to original value
-      for(let i = 0; i < _index; i++){
-        _aeList[i][0] = _aeList[i][1];
-      }
+  //Check _index bit
+  if(aeList[_index][0] === aeList[_index][1]){
+    //console.log("Flipping _aeList[" + _index + "][0] : " + _aeList[_index][0]);
+    //Flip next bit to new value
+    aeList[_index][0] = aeList[_index][2];
 
-      //Flip next bit to new value
-      _aeList[_index][0] = _aeList[_index][2];
-      console.log("i: " + i);
-      console.log("_aeList["+ _index +"][0]: " + _aeList[_index][0]);
-      _newList.push(_aeList);
-      console.log("List: " + _aeList);
-      return gen(_aeList, 0, _newList);
+    //console.log("Flipped _aeList[" + _index + "][0] to: " + _aeList[_index][0]);
+
+    //Unflip previous bits
+    for(let i = 0; i < _index; i++){
+      //console.log("i: " + i);
+      //console.log("Flipping _aeList[" + i + "][0] : " + _aeList[i][0]);
+      aeList[i][0] = aeList[i][1];
+      //console.log("Flipped _aeList[" + i + "][0] to: " + _aeList[i][0]);
     }
+    _index = 0;
+    //console.log("Index reset to: " + _index);
+    //Add new combination
+    console.log("newList (before): " + newList);
+    console.log("Pushing: " + aeList);
+    // _newList.push(_aeList);
+    newList[newList.length] = aeList;
+    console.log("newList (after): " + newList);
+  }else{
+    //Check next bit
+    _index++;
   }
+  //console.log("Entering generation again");
+  return gen(aeList.slice(0), _index, newList.slice(0));
 }
+
+// //when you flip a new flippy boy, you unflip previous flippies
+// function gen(_aeList, _index, _newList){
+//   console.log("index: " + _index);
+//   if(_index === _aeList.length){
+//     //console.log("exiting " + _newList);
+//     return _newList;
+//   }
+//   if(_aeList[_index][0] ===_aeList[_index][2]){
+//     // console.log("Beep");
+//     _index+=1;
+//     return gen(_aeList, _index, _newList);
+//   }else{
+//     if(_index == 0){
+//       _aeList[_index][0] = _aeList[_index][2];
+//       //console.log("_aeList["+ _index +"][0]: " + _aeList[_index][0]);
+//       //_newList.push(_aeList);
+//       //console.log("List: " + _aeList);
+//       return gen(_aeList, 0, _newList);
+//     }else{
+//       //size of active bits in list increases by one
+//       console.log("_index: " + _index);
+
+//       //Flip bits back to original value
+//       for(let i = 0; i < _index; i++){
+//         console.log("i: " + i);
+//         _aeList[i][0] = _aeList[i][1];
+//       }
+
+//       //Flip next bit to new value
+//       _aeList[_index][0] = _aeList[_index][2];
+//       //console.log("_aeList["+ _index +"][0]: " + _aeList[_index][0]);
+//       _newList.push(_aeList);
+//       //console.log("List: " + _aeList);
+//       return gen(_aeList, 0, _newList);
+//     }
+//   }
+// }
 
 
 
@@ -576,3 +607,4 @@ process.on("SIGINT", cleanup.bind(null, {}));
 process.on("uncaughtException", cleanup.bind(null, {}));
 
 run();
+console.log("SORCERY? : " + i);
