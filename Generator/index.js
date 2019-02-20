@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-"use strict";
 const crypto = require("crypto");
 const ethUtils = require("ethereumjs-util");
 const cluster = require("cluster");
@@ -182,18 +181,17 @@ function genSimilars(_string) {
   const completeList = [newString];
   
   for(let i = 0; i < newList.length; i++){
-    console.log("newList.length: " + newList.length);
+    const aeWordList = newList[i];
+    //console.log("aeWordList: newList["+i+"]: " + newList[i]);
     let string = newString;
-    console.log("newList[i].length: " + newList[i].length);
-    for(let j = 0; j < newList[i].length; j++){//aeList
-      console.log("newList[" + i + "]: " + newList[i]);
-      //string = string.replaceAt(newList[i][aeList[j][3]][0], aeList[j][3]);
-      console.log("string: " + string);
+    for(let j = 0; j < aeWordList.length; j++){
+      const aeLetterList = aeWordList[j];
+      //console.log("aeLetterList: aeWordList["+j+"]: " + aeWordList[j]);
+      string = string.replaceAt(aeLetterList[3], aeLetterList[0]);
     }
     completeList.push(string);
   }
-
-  console.log(completeList);
+  return completeList;
 }
 
 function gen(_aeList, _index, _newList) {
@@ -210,12 +208,8 @@ function gen(_aeList, _index, _newList) {
     for(let i = 0; i < _index; i++){ //Unflip previous bits
       aeList[i][0] = aeList[i][1];
     }
-    _index = 0;
-    
-    console.log("newList (before): " + aeList);
-    console.log("Pushing: " + aeList);
     _newList.push(aeList); //Add new combination
-    console.log("newList (after): " + _newList);
+    _index = 0;
   }else{
     _index++; //Check next bit
   }
