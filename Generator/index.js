@@ -44,6 +44,52 @@ function run() {
   }
 }
 
+
+/*
+ * RUN MASTER
+ *
+*/
+
+function masterRun() {
+  //Clean -s
+  let string = cleanString();
+  let preci;
+
+  if(argv.p){
+    preci = cleanPreci();
+
+    //turns string from ["stringA-2", "stringB-4"]
+    //             into [["stringA1","stringA2", "-2"], ["stringB1","stringB2", "-4"]]
+    if(argv.a){
+
+      const stringList = string.split(" or ");
+      for(let i = 0; i < stringList.length; i++){
+        const split = stringList[i].split("-");
+        const genArray = genSimilars(split[0]);
+        stringList[i] = genArray.join("|") + "-" + split[1];
+      }
+      string = stringList.join(" or ");
+      console.log(string);
+    }  
+  }
+
+  if(!checkCommand(string)){
+    return;
+  }
+  
+  console.log("\nSearching for addresses including" + (argv.c ? " " + argv.c + " of" : "") + " " + 
+    (string.split(" or ").length > 1 ? "either " : "") + string + "...\n");
+
+  const spinner = ora("Searching for address number " + 1 + " of " + argv.n + "...");
+  spinner.color = "cyan";
+  spinner.start();
+
+  write("Searching for addresses including" + (argv.c ? " " + argv.c + " of" : "") + " " + 
+  (string.split(" or ").length > 1 ? "either " : "") + string + "...\n");
+
+  startWorkers(spinner, string, preci);
+}
+
 function generateAccounts(_stringArray) {
   if(argv.p){
     for(let i = 0; i <_stringArray.length; i++){
@@ -124,49 +170,9 @@ function generateListString(_score, _list) {
 
 
 /*
- * RUN MASTER
+ * GEN SIMILARS
  *
 */
-
-function masterRun() {
-  //Clean -s
-  let string = cleanString();
-  let preci;
-
-  if(argv.p){
-    preci = cleanPreci();
-
-    //turns string from ["stringA-2", "stringB-4"]
-    //             into [["stringA1","stringA2", "-2"], ["stringB1","stringB2", "-4"]]
-    if(argv.a){
-
-      const stringList = string.split(" or ");
-      for(let i = 0; i < stringList.length; i++){
-        const split = stringList[i].split("-");
-        const genArray = genSimilars(split[0]);
-        stringList[i] = genArray.join("|") + "-" + split[1];
-      }
-      string = stringList.join(" or ");
-      console.log(string);
-    }  
-  }
-
-  if(!checkCommand(string)){
-    return;
-  }
-  
-  console.log("\nSearching for addresses including" + (argv.c ? " " + argv.c + " of" : "") + " " + 
-    (string.split(" or ").length > 1 ? "either " : "") + string + "...\n");
-
-  const spinner = ora("Searching for address number " + 1 + " of " + argv.n + "...");
-  spinner.color = "cyan";
-  spinner.start();
-
-  write("Searching for addresses including" + (argv.c ? " " + argv.c + " of" : "") + " " + 
-  (string.split(" or ").length > 1 ? "either " : "") + string + "...\n");
-
-  startWorkers(spinner, string, preci);
-}
 
 String.prototype.replaceAt = function(index, replacement) {
   return this.substr(0, index) + replacement+ this.substr(index+1);
@@ -389,7 +395,7 @@ function checkString(_stringArray) {
 function startWorkers(_spinner, _string, _preci) {
   //Successfully generated addresses
   let accCount = 0;
-    
+  
   let generationTotal = 0;
   let lastGeneration = 0;
   let lastTime = Date.now();
