@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+"use strict";
 const crypto = require("crypto");
 const ethUtils = require("ethereumjs-util");
 const cluster = require("cluster");
@@ -46,7 +47,7 @@ function run() {
 
 function generateAccounts(_stringArray) {
   if(argv.p){
-    for(let i=0; i<_stringArray.length; i++){
+    for(let i = 0; i <_stringArray.length; i++){
       _stringArray[i] = _stringArray[i].split("-");
       _stringArray[i][1] = +_stringArray[i][1];
     }
@@ -166,8 +167,6 @@ String.prototype.replaceAt = function(index, replacement) {
 }
 
 function genSimilars(_string) {
-  console.log("SORCERY? : " + i);
-
   const newString = "atee";
   const aeList = [];
   for(let i = 0; i < newString.length; i++){
@@ -177,9 +176,8 @@ function genSimilars(_string) {
       aeList.push(["e", "e", "3", i]);
     }
   }
-  //console.log("1: " + aeList[1]);
   //I imcrement through the possibilities in the same way that you increment base 2 numbers
-  const newList = gen(aeList.reverse(), 0, []).reverse();
+  const newList = gen(aeList, 0, []);
   console.log(newList);
   const completeList = [newString];
   
@@ -199,162 +197,30 @@ function genSimilars(_string) {
 }
 
 function gen(_aeList, _index, _newList) {
-  newList = _newList.slice(0);
-  aeList = _aeList.slice(0);
-  //console.log("_aeList: " + _aeList);
-  //console.log("_index: " + _index);
-  //console.log("_newList: " + _newList);
+  const aeList = JSON.parse(JSON.stringify(_aeList));
 
   if(_index === aeList.length){
-      return newList;
+      return _newList;
   }
 
   //Check _index bit
   if(aeList[_index][0] === aeList[_index][1]){
-    //console.log("Flipping _aeList[" + _index + "][0] : " + _aeList[_index][0]);
-    //Flip next bit to new value
-    aeList[_index][0] = aeList[_index][2];
+    aeList[_index][0] = aeList[_index][2]; //Flip next bit to new value
 
-    //console.log("Flipped _aeList[" + _index + "][0] to: " + _aeList[_index][0]);
-
-    //Unflip previous bits
-    for(let i = 0; i < _index; i++){
-      //console.log("i: " + i);
-      //console.log("Flipping _aeList[" + i + "][0] : " + _aeList[i][0]);
+    for(let i = 0; i < _index; i++){ //Unflip previous bits
       aeList[i][0] = aeList[i][1];
-      //console.log("Flipped _aeList[" + i + "][0] to: " + _aeList[i][0]);
     }
     _index = 0;
-    //console.log("Index reset to: " + _index);
-    //Add new combination
-    console.log("newList (before): " + newList);
+    
+    console.log("newList (before): " + aeList);
     console.log("Pushing: " + aeList);
-    // _newList.push(_aeList);
-    newList[newList.length] = aeList;
-    console.log("newList (after): " + newList);
+    _newList.push(aeList); //Add new combination
+    console.log("newList (after): " + _newList);
   }else{
-    //Check next bit
-    _index++;
+    _index++; //Check next bit
   }
-  //console.log("Entering generation again");
-  return gen(aeList.slice(0), _index, newList.slice(0));
+  return gen(aeList, _index, _newList);
 }
-
-// //when you flip a new flippy boy, you unflip previous flippies
-// function gen(_aeList, _index, _newList){
-//   console.log("index: " + _index);
-//   if(_index === _aeList.length){
-//     //console.log("exiting " + _newList);
-//     return _newList;
-//   }
-//   if(_aeList[_index][0] ===_aeList[_index][2]){
-//     // console.log("Beep");
-//     _index+=1;
-//     return gen(_aeList, _index, _newList);
-//   }else{
-//     if(_index == 0){
-//       _aeList[_index][0] = _aeList[_index][2];
-//       //console.log("_aeList["+ _index +"][0]: " + _aeList[_index][0]);
-//       //_newList.push(_aeList);
-//       //console.log("List: " + _aeList);
-//       return gen(_aeList, 0, _newList);
-//     }else{
-//       //size of active bits in list increases by one
-//       console.log("_index: " + _index);
-
-//       //Flip bits back to original value
-//       for(let i = 0; i < _index; i++){
-//         console.log("i: " + i);
-//         _aeList[i][0] = _aeList[i][1];
-//       }
-
-//       //Flip next bit to new value
-//       _aeList[_index][0] = _aeList[_index][2];
-//       //console.log("_aeList["+ _index +"][0]: " + _aeList[_index][0]);
-//       _newList.push(_aeList);
-//       //console.log("List: " + _aeList);
-//       return gen(_aeList, 0, _newList);
-//     }
-//   }
-// }
-
-
-
-//const newList = gen(aeList.reverse(), 1, 0, []);
-
-// //starts at 1
-// function gen(_aeList, _index, _lastPow2, _newList){
-//   const isPow2 = Number.isInteger(Math.pow(_index, 0.5));//check
-//   //const isPow2 = Math.pow(_index, 0.5).isInteger();//check
-
-//   //size of active bits in list increases by one
-//   if(isPow2){
-//     const numOf0 = Math.log2(_index)
-//     //Flip bits back to original value
-//     for(let i = 0; i < numOf0; i++){
-//       _aeList[i][0] = _aeList[i][1];
-//     }
-//     //Flip next bit to new value
-//     _aeList[numOf0][0] = _aeList[numOf0][2]; 
-//     _newList.push(_aeList);
-//     _lastPow2 = _index;
-//   }else{
-//     const sincePow2 = _index - _lastPow2;
-//     if(sincePow2===1){
-//       aeList[sincePow2-1][0] = aeList[sincePow2-1][2];
-//     }
-//   }
-// 5 = 101
-// 6 = 110
-// 2 away
-// [1][0]
-
-
-//   _index++;
-// }
-
-
-// function gen(_string, _aeList, _index){
-//   let lastA = [_string.lastIndexOf("a"), "a"];
-//   let lastE = [_string.lastIndexOf("e"), "e"];
-//   if(lastA === lastE){
-//     return _aeList;
-//   }
-//   _aeList.push(lastA[0] > lastE[0] ? lastA : lastE);
-//   gen(_string, _aeList, _index++);
-// }
-
-
-
-    // let k = 0;
-    // while(k < 1){
-    //   console.log("k: " + k);
-    //   console.log("newString: " + newString);
-    //   let j =  0;
-    //   while(j < 1){
-    //     console.log("newString: " + newString);
-    //     const eIndex = newString.indexOf("e");
-    //     //j = eIndex;
-    //     console.log("eIndex " + eIndex);
-    //     if(eIndex === -1){
-    //       break;
-    //     }
-    //     newString = newString.replaceAt(eIndex, "3");
-    //     list.push(newString);
-    //   }
-    //   const aIndex = newString.indexOf("a");
-    //   if(aIndex === -1){
-    //     break;
-    //   }
-    //   //k = aIndex;
-    //   console.log("aIndex " + aIndex);
-    //   newString = newString.replaceAt(aIndex, "4");
-    //   list.push(newString);
-    // }
-    //stringArray[i][0] = list;
-  //}
-  //return(stringArray.join("-"));
-//}
 
 
 /*
@@ -376,7 +242,7 @@ function getNewAccount() {
 
 function checkWithP(_address, _stringArray, _score, _list, _preci) { 
   let checkedStart = false; 
-  for(i = 0; i < _stringArray.length; i++){
+  for(let i = 0; i < _stringArray.length; i++){
     const included = checkIncludes(_address, _stringArray[i][0]);
     if(included === false){
       continue;
@@ -420,7 +286,7 @@ function checkIncludes(_address, _string) {
 }
 
 function checkWithoutP(_score, _list) {
-  for(i = 0; i < _stringArray.length; i++){
+  for(let i = 0; i < _stringArray.length; i++){
     if(address.includes(_stringArray[i])){
       _list.push(_stringArray[i]);
       _score++;
@@ -468,7 +334,7 @@ function checkCommand(_string) {
 }
 
 function checkString(_stringArray) {
-  for(i = 0; i < _stringArray.length; i++){
+  for(let i = 0; i < _stringArray.length; i++){
     if(argv.p){
       const entry = _stringArray[i].split("-");
       if(entry.length !== 2){
