@@ -97,6 +97,7 @@ function generateAccounts(_stringArray) {
       _stringArray[i][1] = +_stringArray[i][1];
     }
   }
+  
 
   //Total generated accounts
   let accGened = 0;
@@ -142,11 +143,24 @@ function filter(_address, _stringArray, _preci) {
   if(isValidNum(address)){
     score += 10;
   }else if(isValidTxt(address)){//At 50 addresses per seonc, it will take an average of 69338 years for this to be true
-    score += 1000000000000000000;
+    score += 1000000000000;
   }else{
     //Count address score
     if(argv.p){
-      [score, list] = checkWithP(address, _stringArray, score, list, _preci);
+      if(argv.a){
+        for(let i = 0; i < _stringArray.length; i++){
+          const split = _stringArray[i][0].split("-");//TODODODODODODODODOOD
+          console.log("split " + split);
+          const stringArray = _stringArray[i][0].split("|");
+          for(let i = 0; i< stringArray.length; i++){
+            stringArray[i] = stringArray[i] + "-" + split;
+          }
+          console.log(stringArray);
+          [score, list] = checkWithP(address, stringArray, score, list, _preci);
+        }  
+      }else{
+        [score, list] = checkWithP(address, _stringArray, score, list, _preci);
+      }
     }else{
       [score, list] = checkWithoutP(address, _stringArray, score, list);
     }
@@ -244,7 +258,7 @@ function getNewAccount() {
  *
 */
 
-function checkWithP(_address, _stringArray, _score, _list, _preci) { 
+function checkWithP(_address, _stringArray, _score, _list, _preci) {
   let checkedStart = false; 
   for(let i = 0; i < _stringArray.length; i++){
     const included = checkIncludes(_address, _stringArray[i][0]);
