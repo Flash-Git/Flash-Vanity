@@ -70,7 +70,7 @@ function masterRun() {
       }
       string = stringList.join(" or ");
       console.log(string);
-    }  
+    }
   }
 
   if(!checkCommand(string)){
@@ -97,7 +97,6 @@ function generateAccounts(_stringArray) {
       _stringArray[i][1] = +_stringArray[i][1];
     }
   }
-  
 
   //Total generated accounts
   let accGened = 0;
@@ -137,28 +136,27 @@ function filter(_address, _stringArray, _preci) {
     return false;
   }
 
-  let score = 0;  
+  let score = 0;
   let list = [];
 
   if(isValidNum(address)){
     score += 10;
   }else if(isValidTxt(address)){//At 50 addresses per seonc, it will take an average of 69338 years for this to be true
-    score += 1000000000000;
+    score += 1000000000;
   }else{
     //Count address score
     if(argv.p){
       if(argv.a){
         for(let i = 0; i < _stringArray.length; i++){
-          const split = _stringArray[i][0].split("-");//TODODODODODODODODOOD
-          console.log("split " + split);
           const stringArray = _stringArray[i][0].split("|");
-          for(let i = 0; i< stringArray.length; i++){
-            stringArray[i] = stringArray[i] + "-" + split;
+          for(let j = 0; j < stringArray.length; j++){
+            stringArray[j] = [stringArray[j], _stringArray[i][1]];
           }
-          console.log(stringArray);
           [score, list] = checkWithP(address, stringArray, score, list, _preci);
-        }  
+          //if(score>00) console.log(score + " " + list);
+        }
       }else{
+        //console.log(_stringArray);
         [score, list] = checkWithP(address, _stringArray, score, list, _preci);
       }
     }else{
@@ -274,7 +272,7 @@ function checkWithP(_address, _stringArray, _score, _list, _preci) {
         continue;
       }
     }
-    _score += _stringArray[i][1];
+    _score += +_stringArray[i][1];
   }
 
   //Increase score by -p [2] if there are enough vanity strings according to -p [1]
@@ -291,12 +289,6 @@ function count(_string, _char) {
  }
 
 function checkIncludes(_address, _string) {
-
-  if(argv.a){
-
-
-    return false;
-  }
   if(address.includes(_string)){//contains sub
     return _string;
   }
