@@ -257,20 +257,19 @@ function getNewAccount() {
 */
 
 function checkWithP(_address, _stringArray, _score, _list, _preci) {
-  let checkedStart = false; 
+  let startIndex = 0;
   for(let i = 0; i < _stringArray.length; i++){
-    const included = checkIncludes(_address, _stringArray[i][0]);
+    const includedStr = checkIncludes(_address, _stringArray[i][0]);
     if(included === false){
       continue;
     }
-    _list.push(included);
+    _list.push(includedStr);
 
-    if(!checkedStart){//TODO test whether or not this actually boosts performance
-      if(_address.indexOf(included) === 0){//Is at start of address
-        _score += 2 * _stringArray[i][1];//doubles points
-        checkedStart = true;
-        continue;
-      }
+    if(_address.indexOf(includedStr) === startIndex){//Is at start of address
+      _score *= 1.5;
+      _score += 2 * _stringArray[i][1];//doubles points
+      startIndex += includedStr.length;
+      continue;
     }
     _score += +_stringArray[i][1];
   }
