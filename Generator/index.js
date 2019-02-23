@@ -140,7 +140,7 @@ function filter(_address, _stringArray, _preci) {
   let list = [];
 
   if(isValidNum(address)){
-    score += 10;
+    score += 100;
   }else if(isValidTxt(address)){//At 50 addresses per seonc, it will take an average of 69338 years for this to be true
     score += 1000000000;
   }else{
@@ -470,17 +470,17 @@ function isValidHex(_string) {
 
 function isValidNum(_string) {
   let re = /^[0-9]+$/g;
-  if(!re.test(_string.substring(0, 5))){
-    return false;
-  }
+//  if(!re.test(_string.substring(0, 5))){
+//    return false;
+//  }
 	return re.test(_string.substring(5));
 }
 
 function isValidTxt(_string) {
   let re = /^[a-f]+$/g;
-  if(!re.test(_string.substring(0, 5))){//TODO test whether or not this actually boosts performance
-    return false;
-  }
+//  if(!re.test(_string.substring(0, 5))){//TODO test whether or not this actually boosts performance
+//    return false;
+//  }
 	return re.test(_string.substring(5));
 }
 
