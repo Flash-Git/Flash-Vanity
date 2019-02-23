@@ -473,7 +473,7 @@ function isValidNum(_string) {
 //  if(!re.test(_string.substring(0, 5))){
 //    return false;
 //  }
-	return re.test(_string.substring(5));
+	return re.test(_string);
 }
 
 function isValidTxt(_string) {
@@ -481,7 +481,7 @@ function isValidTxt(_string) {
 //  if(!re.test(_string.substring(0, 5))){//TODO test whether or not this actually boosts performance
 //    return false;
 //  }
-	return re.test(_string.substring(5));
+	return re.test(_string);
 }
 
 
