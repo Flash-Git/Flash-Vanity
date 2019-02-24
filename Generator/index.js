@@ -250,7 +250,7 @@ function checkWithP(_address, _stringArray, _score, _list, _preci) {
   let startIndex = 0;
   for(let i = 0; i < _stringArray.length; i++){
     const includedStr = checkIncludes(_address, _stringArray[i][0]);
-    if(included === false){
+    if(includedStr === false){
       continue;
     }
     _list.push(includedStr);
