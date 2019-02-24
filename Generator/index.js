@@ -58,17 +58,18 @@ function masterRun() {
   if(argv.p){
     preci = cleanPreci();
 
-    //turns string from ["stringA-2", "stringB-4"]
-    //             into [["stringA1","stringA2", "-2"], ["stringB1","stringB2", "-4"]]
     if(argv.a){
-
+      let newString = [];
       const stringList = string.split(" or ");
       for(let i = 0; i < stringList.length; i++){
         const split = stringList[i].split("-");
+        console.log("split 0 " + split[0] + ", split 1 " + split[1]);
         const genArray = genSimilars(split[0]);
-        stringList[i] = genArray.join("|") + "-" + split[1];
+        for(let i = 0; i < genArray.length; i++){
+          newString.push(genArray[i] + "-" + split[1]);
+        }
       }
-      string = stringList.join(" or ");
+      string = newString.join(" or ");
       console.log(string);
     }
   }
@@ -146,19 +147,8 @@ function filter(_address, _stringArray, _preci) {
   }else{
     //Count address score
     if(argv.p){
-      if(argv.a){
-        for(let i = 0; i < _stringArray.length; i++){
-          const stringArray = _stringArray[i][0].split("|");
-          for(let j = 0; j < stringArray.length; j++){
-            stringArray[j] = [stringArray[j], _stringArray[i][1]];
-          }
-          [score, list] = checkWithP(address, stringArray, score, list, _preci);
-          //if(score>00) console.log(score + " " + list);
-        }
-      }else{
-        //console.log(_stringArray);
-        [score, list] = checkWithP(address, _stringArray, score, list, _preci);
-      }
+      //console.log(_stringArray);
+      [score, list] = checkWithP(address, _stringArray, score, list, _preci);
     }else{
       [score, list] = checkWithoutP(address, _stringArray, score, list);
     }
@@ -335,37 +325,17 @@ function checkCommand(_string) {
     console.log("Invalid number: " + argv.n);
     return false;
   }
-  if(argv.a){
-    const sizeableLad = _string.split(" or ");
-    for(let i = 0; i < sizeableLad.length; i++){
-      if(!checkString(sizeableLad[i].split("|"))){
-        return false;
-      }
-    }
-  }else if(!checkString(_string.split(" or "))){
+  if(!checkString(_string.split(" or "))){
     return false;
   }
   return true;
 }
 
-function checkString(_stringArray) {
-  let entryScore;
-  if(argv.a){
-    entryScore = _stringArray[_stringArray.length-1].split("-")[1];
-  }
-  
+function checkString(_stringArray) {  
   for(let i = 0; i < _stringArray.length; i++){
     if(argv.p){
-      let entry = [];
-      if(argv.a){
-        if(i == _stringArray.length-1){
-          entry = [_stringArray[i].split("-")[0], entryScore];
-        }else{
-          entry = [_stringArray[i], entryScore];
-        }
-      }else{
-        entry = _stringArray[i].split("-");
-      }
+      let entry = _stringArray[i].split("-");
+
       if(entry.length !== 2){
         console.log("Invalid entry length of " + entry + " at pos = [" + i + "]");
         return false;
