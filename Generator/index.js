@@ -271,12 +271,6 @@ function checkWithP(_address, _stringArray, _score, _list, _preci) {
   return [_score, _list];
 }
 
-
-function count(_string, _char) {
-  const re = new RegExp(_char, "gi");
-  return _string.match(re).length;
- }
-
 function checkIncludes(_address, _string) {
   if(address.includes(_string)){//contains sub
     return _string;
