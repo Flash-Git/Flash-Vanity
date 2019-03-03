@@ -467,3 +467,30 @@ process.on("SIGINT", cleanup.bind(null, {}));
 process.on("uncaughtException", cleanup.bind(null, {}));
 
 run();
+
+// let strings = [[aaa5, 0], [aaa4, 0], [aab2, 0], [aa68, 0], [bab2, 0], [bac9, 0], [cac9, 0], [dadd, 0], [dadf, 0]];
+
+
+// //create list of index 0s
+// let strings0 = [aaa5, bab2, cac9];
+
+// let strings = [[a, [aa, [aaa, [aaa5, aaa4]], [aab2, aa68]]], [ba, [bab2, bac9]], [cac9], [dad, [dadd, dadf]]];
+// strings[0] = [a, [aa, [aaa, [aaa5, aaa4]], [aab2, aa68]]];
+// strings[0][0] = a;
+// strings[0][1] = [aa, [aaa, [aaa5, aaa4]], [aab2, aa68]];
+// strings[0][1][0] = aa;
+// strings[0][1][1] = [aaa, [aaa5, aaa4]];
+// strings[0][1][2] = [aab2, aa68];
+// -strings[0][1][2][0] = aab2;
+// -strings[0][1][2][1] = aa68;
+// strings[0][1][1][0] = aaa;
+// strings[0][1][1][1] = [aaa5, aaa4];
+// -strings[0][1][1][1][0] = aaa5;
+// -strings[0][1][1][1][1] = aaa4;
+// strings[1] = [ba, [bab2, bac9]];
+// strings[1][0] = ba;
+// strings[1][1] = [bab2, bac9];
+// -strings[1][1][0] = bab2;
+// -strings[1][1][1] = bac9;
+// strings[2] = [cac9];
+// strings[3] = [dad, [dadd, dadf]];
