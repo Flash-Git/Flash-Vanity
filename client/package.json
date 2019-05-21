@@ -6,12 +6,12 @@
     "axios": "^0.18.0",
     "ethereum-blockies-base64": "^1.0.2",
     "ethereumjs-util": "^6.1.0",
-    "react": "^16.8.2",
-    "react-dom": "^16.8.2",
-    "react-scripts": "^2.1.5",
-    "react-transition-group": "^2.5.3",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-scripts": "^2.1.8",
+    "react-transition-group": "^2.9.0",
     "uuid": "^3.3.2",
-    "web3": "^1.0.0-beta.46"
+    "web3": "^1.0.0-beta.55"
   },
   "scripts": {
     "start": "react-scripts start",
