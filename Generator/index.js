@@ -52,7 +52,7 @@ function run() {
   if(cluster.isMaster){
     masterRun();
   }else{
-    generateAccounts(process.env.stringArray.split(","));
+    generateAccounts();
   }
 }
 
@@ -137,8 +137,6 @@ function masterRun() {
     }
     return stringList.join(" or ");
   }
-  //console.log(shortString);
-
 
   const searchMsg = "Searching for addresses including" + (argv.score > 0 ? " " + argv.score + " of" : "") + " " + 
     (stringList.length > 1 ? "either " : "") + shortString + "...\n"
@@ -150,78 +148,81 @@ function masterRun() {
   spinner.start();
 
   write(searchMsg);
-  
-  startWorkers(spinner, string, rareAdds, searchLoc, inputArg.r0, inputArg.d);
+
+  startWorkers(spinner, string, [rareAdds, searchLoc, inputArg.r0, inputArg.d]);
 }
 
-function generateAccounts(_stringArray) {
-  if(argv.p){
-    for(let i = 0; i <_stringArray.length; i++){
-      _stringArray[i] = _stringArray[i].split("-");
-      _stringArray[i][1] = +_stringArray[i][1];
-    }
-  }
+function generateAccounts() {
+  const stringArray = process.env.string.split(",");
 
-  //Total generated accounts
+  //Total number of generated accounts
   let accGened = 0;
+
+  //Set scores in array
+  for(let i = 0; i < stringArray.length; i++){
+    stringArray[i] = stringArray[i].split("-");
+    stringArray[i][1] = +stringArray[i][1];
+  }
+  
   while(true){
-    account = getNewAccount();
-    const scoreMsg = filter(account.address, _stringArray,  argv.p ? process.env.preci.split(",") : [""]);
+    const account = getNewAccount();
+    
     accGened++;
+    
     if(accGened%500 === 499){
       process.send({
         incr: true
       });
     }
-    if(scoreMsg === false){
+    
+    const resultMsg = filter(account.address, stringArray, []);
+    if(resultMsg === ""){
       continue;
     }
+
     process.send({
-      msg: (scoreMsg + "\nID: " + process.pid + ", Address: " + account.address + ", Key: " + account.privKey)
+      msg: (resultMsg + "\nAddress: " + account.address + ", Key: " + account.privKey)
     });
   }
 }
 
-function filter(_address, _stringArray, _preci) {
+function filter(_address, _stringArray, _args) {
   //Remove 0x
   address = _address.substring(2);
 
-  if(argv.c == "undefined"){
-    for(i = 0; i < _stringArray.length; i++){
-      if(address.includes(_stringArray[i])){
-        return _stringArray[i];
-      }
-      if(isValidNum(address)){
-        return _stringArray[i];
-      }else if(isValidTxt(address)){
-        return _stringArray[i];
-      }
-    }
+  let score = 0;
+  let baseMult = 0;
+  let list = [];
+
+  if(_args.raNum){
+    if(isValidNum(address)) return generateListString("number", list);
+  }
+  if(_args.raLetter){
+    if(isValidTxt(address)) return generateListString("letter", list);
+  }
+
+  if(_args.zeroMult > 0){
+    baseMult = setZeroMult(address, _args.zeroMult);
+  }
+
+  if(_args.searchLoc){
+
+  }
+  
+  //Return if it passes score requirement
+  if(!passTally(score, list, _preci[0])){
     return false;
   }
 
-  let score = 0;
-  let list = [];
-
-  if(isValidNum(address)){
-    score += 100;
-  }else if(isValidTxt(address)){//At 50 addresses per seonc, it will take an average of 69338 years for this to be true
-    score += 1000000000;
-  }else{
-    //Count address score
-    if(argv.p){
-      //console.log(_stringArray);
-      [score, list] = checkWithP(address, _stringArray, score, list, _preci);
-    }else{
-      [score, list] = checkWithoutP(address, _stringArray, score, list);
-    }
-
-    //Return if it passes score requirement
-    if(!passTally(score, list, _preci[0])){
-      return false;
-    }
-  }
   return generateListString(score, list);
+}
+
+function setZeroMult(_address, _mult) {
+  for(let i = 0; i < 10; i++){
+    if(!_address[i] === "0") break;
+    //increase mult
+  }
+
 }
 
 function generateListString(_score, _list) {
@@ -239,7 +240,7 @@ function generateListString(_score, _list) {
  *
 */
 
-String.prototype.replaceAt = function(index, replacement) {
+String.prototype.replaceAt = (index, replacement) => {
   return this.substr(0, index) + replacement+ this.substr(index+1);
 }
 
@@ -414,7 +415,7 @@ function checkString(_stringArray) {
 *
 */
 
-function startWorkers(_spinner, _string, _preci) {
+function startWorkers(_spinner, _string, _args) {
   //Successfully generated addresses
   let accCount = 0;
   
@@ -424,8 +425,8 @@ function startWorkers(_spinner, _string, _preci) {
 
   for(let i = 0; i < argv.t; i++){
     const worker_env = {
-      stringArray: _string.split(" or "),
-      preci: _preci
+      string: _string,
+      args: _args
     }
     proc = cluster.fork(worker_env);
     proc.on("message", message => {
@@ -449,7 +450,6 @@ function startWorkers(_spinner, _string, _preci) {
         generationTotal += 500;
       }
     });
-
   }
 
   setInterval(() => {
@@ -483,7 +483,7 @@ function write(_account) {
 
 function isValidHex(_string) {
   let re = /^[0-9a-f]+$/g;
-	return re.test(_string);
+  return re.test(_string);
 }
 
 function isValidNum(_string) {
