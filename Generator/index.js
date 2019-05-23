@@ -21,7 +21,7 @@ const inputArg = require("yargs")
   .default("sl", "1, 0, 0")
   .alias("0m", "0Multiplier")
   .describe("0m", "Multiplier per leading 0")
-  .default("0m", 0)
+  .default("0m", 2)
   .alias("ra", "rareAddresses")
   .describe("ra", "Toggle check for letter or number addresses")
   .default("ra", "false, false")
@@ -191,38 +191,64 @@ function filter(_address, _stringArray, _args) {
   address = _address.substring(2);
 
   let score = 0;
-  let baseMult = 0;
+  let zeroScore = 0;
   let list = [];
 
   if(_args.raNum){
-    if(isValidNum(address)) return generateListString("number", list);
+    if(isValidNum(address)) return generateListString("number", []);
   }
   if(_args.raLetter){
-    if(isValidTxt(address)) return generateListString("letter", list);
+    if(isValidTxt(address)) return generateListString("letter", []);
   }
 
   if(_args.zeroMult > 0){
-    baseMult = setZeroMult(address, _args.zeroMult);
+    zeroScore = setZeroMult(address, _args.zeroMult);
   }
 
-  if(_args.searchLoc){
-
+  if(_args.searchLoc[0] > 0){
+    const string = checkChar(address, 0, _stringArray);
+    if(string){
+      list.push(string[0]);
+      score+=(string[1]*_args.searchLoc[0]);
+    }
   }
-  
-  //Return if it passes score requirement
-  if(!passTally(score, list, _preci[0])){
+
+  score = score * zeroScore;
+
+  if(score < _args.score) return false;
+
+  return generateListString(score, list);
+}
+
+//Optimisation possible by keeping track of strings that have beginnings that have already been dismissed
+function checkChar(_address, _index, _stringArray) {
+  let newArray = [];
+  for(let i = 0; i < _stringArray.length; i++){
+    const string = _stringArray[i][0];
+    if(string.length+_index >= _address.length) continue;
+    for(let j = 0; j < string.length; j++){
+      if(_address[_index+j] !== string[j]) break;
+    }
+    newArray.push(_stringArray[i]);
+  }
+  if(newArray.length === 0){
     return false;
   }
 
-  return generateListString(score, list);
+  let highScore = ["", 1]; 
+  for(let i = 0; i < newArray.length; i++){
+    if(newArray[i][1] > highScore[1]){
+      highScore = newArray[i];
+    }
+  }
+  return highScore;
 }
 
 function setZeroMult(_address, _mult) {
   for(let i = 0; i < 10; i++){
     if(!_address[i] === "0") break;
-    //increase mult
+    return 16**(_mult*i);
   }
-
 }
 
 function generateListString(_score, _list) {
@@ -231,7 +257,8 @@ function generateListString(_score, _list) {
     listString = listString.substring(0, listString.lastIndexOf(", ")) + " and" + 
       listString.substring(listString.lastIndexOf(", ") + 1, listString.length);
   }
-  return listString + " for a score of " + _score + ":";
+  if(_list.length === 1) return listString + " for a score of " + _score + ":";
+  return "rare " + score + " address:";
 }
 
 
