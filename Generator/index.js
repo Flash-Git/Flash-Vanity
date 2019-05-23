@@ -5,33 +5,45 @@ const cluster = require("cluster");
 const numCPUs = require("os").cpus().length;
 const ora = require("ora");
 const fs = require("fs");
-const argv = require("yargs")
-  .usage("Usage: $0 -n [num] -s [string] -p [num] -l [string] -h")
-  .default("n", 100)
-  .alias("n", "number")
-  .describe("n", "Number of matching addresses to generate")//find is more accurate
-  .alias("s", "string")//TODO change to smth less dumb
+const inputArg = require("yargs")
+  .usage("Usage: $0 -s [string] -n [num] -d [num] -l [string] -h")
+  .alias("s", "string")
   .describe("s", "String to find in addresses, supports multiple strings seperated by commas")
   .demandOption(["s"])
-  .alias("p", "precision")
-  .describe("p", "Toggle support for score after each string entry")
-  .alias("c", "combo")
-  .describe("c", "minimum number of required strings to find in each address")
-  .default("l", Date.now())
+  .alias("n", "number")
+  .describe("n", "Number of matching addresses to generate")//find is more accurate
+  .default("n", 10)
+  .alias("score", "scoreThreshold")//old c
+  .describe("score", "Score required to return address")
+  .default("score", 0)
+  .alias("sl", "searchLocation")
+  .describe("sl", "Multipliers for where to look for string")
+  .default("sl", "1, 0, 0")
+  .alias("0m", "0Multiplier")
+  .describe("0m", "Multiplier per leading 0")
+  .default("0m", 0)
+  .alias("ra", "rareAddresses")
+  .describe("ra", "Toggle check for letter or number addresses")
+  .default("ra", "false, false")
+  .alias("d", "dynamicScore")
+  .describe("d", "Toggle support for explicit score after each string entry")
+  //.default("d", false)
   .alias("l", "log")
   .describe("l", "Adds logging to the specified filename")
-  .default("t", numCPUs)
+  .default("l", Date.now())
   .alias("t", "threads")
   .describe("t", "Number of threads to spawn")
-  .default("r", 5000)
+  .default("t", numCPUs)
   .alias("r", "refreshTime")
   .describe("r", "Sets refresh time on spinner in ms")
-  .alias("a", "similar")
-  .describe("a", "Toggle similar string matches")
+  .default("r", 2000)
+  .alias("sa", "similar addresses")
+  .describe("sa", "Toggle generation of similar strings")
+  //.default("sa", false)
   .example("$0 -s '1337' | Finds addresses containing '1337'")
   .example("$0 -s '1337, b00b5' | Finds addresses containing either '1337' or 'b00b5'")
   .example("$0 -n 50 -s '1337' | Finds 50 addresses containing '1337'")
-  .example("$0 -s '1337, b00b5' -p '2' | Finds addresses containing both '1337' and 'b00b5'")
+  //.example("$0 -s '1337, b00b5' -p '2' | Finds addresses containing both '1337' and 'b00b5'")
   .help("h")
   .alias("h", 'help')
   .argv;
@@ -50,43 +62,96 @@ function run() {
  *
 */
 
+
+function cleanString(_string) {
+  return _string.toLowerCase().split(" ").join("");
+}
+
 function masterRun() {
-  //Clean -s
-  let string = cleanString();
-  let preci;
+  let string = inputArg.s;
+  let rareAdds = inputArg.ra;
+  let searchLoc = inputArg.sl;
 
-  if(argv.p){
-    preci = cleanPreci();
+  //Clean strings
+  try{
+    string = cleanString(string);
+    rareAdds = cleanString(inputArg.ra);
+    searchLoc = cleanString(inputArg.sl);
+  }catch(e){
+    console.log("Inputs failed cleaning:");
+    console.log(e);
+    return;
+  }
 
-    if(argv.a){
-      let newString = [];
-      const stringList = string.split(" or ");
+  //Check command
+  try{
+
+  }catch(e){
+    console.log("Command failed check:");
+    console.log(e);
+    return;
+  }
+
+  //Add scores
+  if(!inputArg.d){
+    //Add score based on rarity
+    let stringList = string.split(",");
+    if(stringList.length === 0){
+      string = string + "-" + 16**string.length;
+    }else{
       for(let i = 0; i < stringList.length; i++){
-        const split = stringList[i].split("-");
-        const genArray = genSimilars(split[0]);
-        for(let i = 0; i < genArray.length; i++){
-          newString.push(genArray[i] + "-" + split[1]);
-        }
+        stringList[i] = stringList[i] + "-" + 16**stringList[i].length;
       }
-      string = newString.join(" or ");
+      string = stringList.join(",");
     }
   }
 
-  if(!checkCommand(string)){
-    return;
+  //Generate similars
+  if(inputArg.sa){
+    const stringList = string.split(",");
+    for(let i = 0; i < stringList.length; i++){
+      const split = stringList[i].split("-");
+      const genArray = genSimilars(split[0]);
+      for(let i = 0; i < genArray.length; i++){
+        newString.push(genArray[i] + "-" + split[1]);
+      }
+    }
+    string = newString.join(",");
   }
+
+  //Sort string
+  string = () => {
+    
+  }
+
+  const stringList = string.split(",");
+
+  //Join first 3 entries for output log
+  const shortString = () => {
+    if(stringList.length > 3){
+      let shortStringList = [];
+      for(let i = 0; i < 3; i++){
+        shortStringList.push(stringList[i]);
+      }
+      return shortStringList.join(" or ");
+    }
+    return stringList.join(" or ");
+  }
+  //console.log(shortString);
+
+
+  const searchMsg = "Searching for addresses including" + (argv.score > 0 ? " " + argv.score + " of" : "") + " " + 
+    (stringList.length > 1 ? "either " : "") + shortString + "...\n"
   
-  console.log("\nSearching for addresses including" + (argv.c ? " " + argv.c + " of" : "") + " " + 
-    (string.split(" or ").length > 1 ? "either " : "") + string + "...\n");
+  console.log("\n"+ searchMsg);
 
   const spinner = ora("Searching for address number " + 1 + " of " + argv.n + "...");
   spinner.color = "cyan";
   spinner.start();
 
-  write("Searching for addresses including" + (argv.c ? " " + argv.c + " of" : "") + " " + 
-  (string.split(" or ").length > 1 ? "either " : "") + string + "...\n");
-
-  startWorkers(spinner, string, preci);
+  write(searchMsg);
+  
+  startWorkers(spinner, string, rareAdds, searchLoc, inputArg.r0, inputArg.d);
 }
 
 function generateAccounts(_stringArray) {
@@ -303,14 +368,6 @@ function passTally(_score, _list, _vanityBar) {
 *
 */
 
-function cleanString() {
-  let string = argv.s.split(" ").join("");
-  return string.toLowerCase().split(",").join(" or ");
-}
-
-function cleanPreci() {
-  return argv.p.toLowerCase().split(" ").join("");
-}
 
 function checkCommand(_string) {
   if(!typeof(argv.n) === "number" && argv.n > 0){
