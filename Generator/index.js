@@ -27,7 +27,7 @@ const inputArg = require("yargs")
   .default("ra", "false, false")
   .alias("d", "dynamicScore")
   .describe("d", "Toggle support for explicit score after each string entry")
-  //.default("d", false)
+  .default("d", false)
   .alias("l", "log")
   .describe("l", "Adds logging to the specified filename")
   .default("l", Date.now())
@@ -150,10 +150,12 @@ function masterRun() {
 
 function generateAccounts() {
   const stringArray = process.env.string.split(",");
-  const args = process.env.args;
-  console.log(args.rareAdds);
-  args.rareAdds = args.rareAdds.split(",");
-  args.searchLoc = args.searchLoc.split(",");
+  const args = {
+    rareAdds: process.env.rareAdds.split(","),
+    searchLoc: process.env.searchLoc.split(","),
+    zeroMult: process.env.zeroMult,
+    dynScore: process.env.dynScore
+  }
 
   //Total number of generated accounts
   let accGened = 0;
@@ -395,7 +397,10 @@ function startWorkers(_spinner, _string, _args) {
   for(let i = 0; i < inputArg.t; i++){
     const worker_env = {
       string: _string,
-      args: _args
+      rareAdds: _args.rareAdds,
+      searchLoc: _args.searchLoc,
+      zeroMult: _args.zeroMult,
+      dynScore: _args.dynScore
     }
     proc = cluster.fork(worker_env);
     proc.on("message", message => {
