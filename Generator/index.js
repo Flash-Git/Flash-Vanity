@@ -62,15 +62,14 @@ function run() {
  *
 */
 
-
-function cleanString(_string) {
-  return _string.toLowerCase().split(" ").join("");
-}
-
 function masterRun() {
   let string = inputArg.s;
   let rareAdds = inputArg.ra;
   let searchLoc = inputArg.sl;
+
+  const cleanString = (_string) => {
+    return _string.toLowerCase().split(" ").join("");
+  }
 
   //Clean strings
   try{
@@ -120,10 +119,7 @@ function masterRun() {
   }
 
   //Sort string
-  string = () => {
-    
-  }
-
+  
   const stringList = string.split(",");
 
   //Join first 3 entries for output log
@@ -133,13 +129,13 @@ function masterRun() {
       for(let i = 0; i < 3; i++){
         shortStringList.push(stringList[i]);
       }
-      return shortStringList.join(" or ");
+    return shortStringList.join(" or ");
     }
     return stringList.join(" or ");
-  }
+  };
 
   const searchMsg = "Searching for addresses including" + (argv.score > 0 ? " " + argv.score + " of" : "") + " " + 
-    (stringList.length > 1 ? "either " : "") + shortString + "...\n"
+    (stringList.length > 1 ? "either " : "") + shortString() + "...\n"
   
   console.log("\n"+ searchMsg);
 
@@ -271,6 +267,7 @@ String.prototype.replaceAt = (index, replacement) => {
   return this.substr(0, index) + replacement+ this.substr(index+1);
 }
 
+//TODO make it work both ways
 function genSimilars(_string) {
   const newString = _string;
   const aeList = [];
@@ -329,65 +326,6 @@ function getNewAccount() {
   const privKey = crypto.randomBytes(32);
   const address = "0x" + ethUtils.privateToAddress(privKey).toString("hex");
   return { address, privKey: privKey.toString("hex") };
-}
-
-
-/*
- * FILTER
- *
-*/
-
-function checkWithP(_address, _stringArray, _score, _list, _preci) {
-  let startIndex = 0;
-  for(let i = 0; i < _stringArray.length; i++){
-    const includedStr = checkIncludes(_address, _stringArray[i][0]);
-    if(includedStr === false){
-      continue;
-    }
-    _list.push(includedStr);
-
-    if(_address.indexOf(includedStr) === startIndex){//Is at start of address
-      _score *= 1.5;
-      _score += 2 * _stringArray[i][1];//doubles points
-      startIndex += includedStr.length;
-      continue;
-    }
-    _score += +_stringArray[i][1];
-  }
-
-  //Increase score by -p [2] if there are enough vanity strings according to -p [1]
-  if(_list.length >= _preci[1]){
-    _score += (+_preci[2] + _list.length - _preci[1]);
-  }
-  return [_score, _list];
-}
-
-function checkIncludes(_address, _string) {
-  if(address.includes(_string)){//contains sub
-    return _string;
-  }
-  return false;
-}
-
-function checkWithoutP(_score, _list) {
-  for(let i = 0; i < _stringArray.length; i++){
-    if(address.includes(_stringArray[i])){
-      _list.push(_stringArray[i]);
-      _score++;
-    }
-  }
-  return [_score, _list];
-}
-
-function passTally(_score, _list, _vanityBar) {
-  if(_score < argv.c){
-    if(argv.p == "undefined"){
-      return false;
-    }else if(_list.length < _vanityBar){//Return if address passes contains at least -p[0] vanity strings
-      return false;
-    }
-  }
-  return true;
 }
 
 
