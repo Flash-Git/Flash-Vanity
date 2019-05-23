@@ -19,9 +19,9 @@ const inputArg = require("yargs")
   .alias("sl", "searchLocation")
   .describe("sl", "Multipliers for where to look for string")
   .default("sl", "1, 0, 0")
-  .alias("0m", "0Multiplier")
-  .describe("0m", "Multiplier per leading 0")
-  .default("0m", 2)
+  .alias("zm", "zeroMult")
+  .describe("zm", "Multiplier for leading zeros")
+  .default("zm", 2)
   .alias("ra", "rareAddresses")
   .describe("ra", "Toggle check for letter or number addresses")
   .default("ra", "false, false")
@@ -134,22 +134,26 @@ function masterRun() {
     return stringList.join(" or ");
   };
 
-  const searchMsg = "Searching for addresses including" + (argv.score > 0 ? " " + argv.score + " of" : "") + " " + 
+  const searchMsg = "Searching for addresses including" + (inputArg.score > 0 ? " " + inputArg.score + " of" : "") + " " + 
     (stringList.length > 1 ? "either " : "") + shortString() + "...\n"
   
   console.log("\n"+ searchMsg);
 
-  const spinner = ora("Searching for address number " + 1 + " of " + argv.n + "...");
+  const spinner = ora("Searching for address number " + 1 + " of " + inputArg.n + "...");
   spinner.color = "cyan";
   spinner.start();
 
   write(searchMsg);
 
-  startWorkers(spinner, string, [rareAdds, searchLoc, inputArg.r0, inputArg.d]);
+  startWorkers(spinner, string, { rareAdds, searchLoc, zeroMult: inputArg.zm, dynScore: inputArg.d });
 }
 
 function generateAccounts() {
   const stringArray = process.env.string.split(",");
+  const args = process.env.args;
+  console.log(args.rareAdds);
+  args.rareAdds = args.rareAdds.split(",");
+  args.searchLoc = args.searchLoc.split(",");
 
   //Total number of generated accounts
   let accGened = 0;
@@ -171,7 +175,7 @@ function generateAccounts() {
       });
     }
     
-    const resultMsg = filter(account.address, stringArray, []);
+    const resultMsg = filter(account.address, stringArray, args);
     if(resultMsg === ""){
       continue;
     }
@@ -190,10 +194,10 @@ function filter(_address, _stringArray, _args) {
   let zeroScore = 0;
   let list = [];
 
-  if(_args.raNum){
+  if(_args.rareAdds[0]){
     if(isValidNum(address)) return generateListString("number", []);
   }
-  if(_args.raLetter){
+  if(_args.rareAdds[1]){
     if(isValidTxt(address)) return generateListString("letter", []);
   }
 
@@ -388,7 +392,7 @@ function startWorkers(_spinner, _string, _args) {
   let lastGeneration = 0;
   let lastTime = Date.now();
 
-  for(let i = 0; i < argv.t; i++){
+  for(let i = 0; i < inputArg.t; i++){
     const worker_env = {
       string: _string,
       args: _args
@@ -396,18 +400,18 @@ function startWorkers(_spinner, _string, _args) {
     proc = cluster.fork(worker_env);
     proc.on("message", message => {
       if(message.msg){
-        if(accCount >= argv.n){
+        if(accCount >= inputArg.n){
           return;
         }
         _spinner.succeed(accCount+1 + ". In address " + generationTotal + ", found " + message.msg + "\n");
         write(accCount+1 + ". In address " + generationTotal + ", found " + message.msg + "\n");
         accCount++;
-        if(accCount >= argv.n){
+        if(accCount >= inputArg.n){
           cleanup();
           _spinner.text = "Ending Process";
           return;
         }
-        _spinner.text = "Searching for address " + (accCount+1) + " of " + argv.n + " at a rate of " + 
+        _spinner.text = "Searching for address " + (accCount+1) + " of " + inputArg.n + " at a rate of " + 
           Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
           _spinner.start();
       }
@@ -418,11 +422,11 @@ function startWorkers(_spinner, _string, _args) {
   }
 
   setInterval(() => {
-    _spinner.text = "Searching for number " + (accCount+1) + " of " + argv.n + " at a rate of " + 
+    _spinner.text = "Searching for number " + (accCount+1) + " of " + inputArg.n + " at a rate of " + 
       Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
     lastGeneration = generationTotal;
     lastTime = Date.now();
-  }, argv.r);
+  }, inputArg.r);
 }
 
 
@@ -432,7 +436,7 @@ function startWorkers(_spinner, _string, _args) {
 */
 
 function write(_account) {
-  fs.appendFileSync("flash-vanity-" + argv.l +".txt", _account, (err) => {
+  fs.appendFileSync("flash-vanity-" + inputArg.l +".txt", _account, (err) => {
     if(err){
       console.log(err);
       cleanup();
