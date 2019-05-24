@@ -39,7 +39,7 @@ const inputArg = require("yargs")
   .default("r", 2000)
   .alias("sa", "similar addresses")
   .describe("sa", "Toggle generation of similar strings")
-  //.default("sa", false)
+  .default("sa", false)
   .example("$0 -s '1337' | Finds addresses containing '1337'")
   .example("$0 -s '1337, b00b5' | Finds addresses containing either '1337' or 'b00b5'")
   .example("$0 -n 50 -s '1337' | Finds 50 addresses containing '1337'")
@@ -68,7 +68,13 @@ function masterRun() {
   let searchLoc = inputArg.sl;
 
   const cleanString = (_string) => {
-    return _string.toLowerCase().split(" ").join("");
+    try{
+      return _string.toLowerCase().split(" ").join("");
+    }catch(e){
+      console.log("Inputs failed cleaning:");
+      console.log(_string);
+      throw e;
+    }
   }
 
   //Clean strings
@@ -77,8 +83,7 @@ function masterRun() {
     rareAdds = cleanString(inputArg.ra);
     searchLoc = cleanString(inputArg.sl);
   }catch(e){
-    console.log("Inputs failed cleaning:");
-    console.log(e);
+    //console.log(e);
     return;
   }
 
@@ -105,8 +110,10 @@ function masterRun() {
     }
   }
 
+
   //Generate similars
   if(inputArg.sa){
+    let newString = [];
     const stringList = string.split(",");
     for(let i = 0; i < stringList.length; i++){
       const split = stringList[i].split("-");
@@ -191,30 +198,38 @@ function filter(_address, _stringArray, _args) {
   //Remove 0x
   address = _address.substring(2);
 
-  let score = 0;
-  //let zeroScore = 0;
+  let score = 1;
   let list = [];
 
   if(_args.rareAdds[0]){
-    if(isValidNum(address)) return generateListString("number", []);
+    if(isValidNum(address)) return generateListString("number", ["number"]);
   }
   if(_args.rareAdds[1]){
-    if(isValidTxt(address)) return generateListString("letter", []);
+    if(isValidTxt(address)) return generateListString("letter", ["number"]);
   }
 
-  if(_args.searchLoc[0] > 0){
-    const string = checkChar(address, 0, _stringArray);
+  const handleString = (_index) => {
+    const string = checkChar(address, _index, _stringArray);
     if(string){
       list.push(string[0]);
-      score+=(string[1]*_args.searchLoc[0]);
+      score*=(string[1]*_args.searchLoc[0]);//for first char TODO
     }
   }
 
-  /*if(_args.zeroMult > 0){
-    zeroScore = setZeroMult(address, _args.zeroMult);
-    score *= zeroScore;
-    if(zeroScore-1 > _args.score) list.push("zeros");
-  }*/
+  if(_args.searchLoc[0] > 0){
+    handleString(0);
+  }
+
+  if(_args.zeroMult > 0){
+    if(score === 1){
+      const zeros = setZeroMult(address);
+      if(zeros > 0){
+        list.push("zeros");
+        score = 16**(zeros*_args.zeroMult);
+        handleString(zeros);
+      }else score--;
+    }
+  }
 
   if(score < _args.score) return false;
 
@@ -222,6 +237,7 @@ function filter(_address, _stringArray, _args) {
 }
 
 //Optimisation possible by keeping track of strings that have beginnings that have already been dismissed
+//Can make recursive to check for chained strings
 function checkChar(_address, _index, _stringArray) {
   let newArray = [];
   for(let i = 0; i < _stringArray.length; i++){
@@ -233,7 +249,6 @@ function checkChar(_address, _index, _stringArray) {
         removed = true;
         break;
       }
-      
     }
     if(!removed) newArray.push(_stringArray[i]);
   }
@@ -241,17 +256,14 @@ function checkChar(_address, _index, _stringArray) {
 
   let highScore = ["", 1]; 
   for(let i = 0; i < newArray.length; i++){
-    if(newArray[i][1] > highScore[1]){
-      highScore = newArray[i];
-    }
+    if(newArray[i][1] > highScore[1]) highScore = newArray[i];
   }
   return highScore;
 }
 
-function setZeroMult(_address, _mult) {
-  for(let i = 0; i < 10; i++){
-    if(!_address[i] === "0") break;
-    return 16**(_mult*i);
+function setZeroMult(_address) {
+  for(let i = 0; i < _address.length; i++){
+    if(_address[i] !== "0") return i;
   }
 }
 
@@ -261,8 +273,7 @@ function generateListString(_score, _list) {
     listString = listString.substring(0, listString.lastIndexOf(", ")) + " and" + 
       listString.substring(listString.lastIndexOf(", ") + 1, listString.length);
   }
-  if(_list.length === 1) return listString + " for a score of " + _score + ":";
-  return "rare " + score + " address:";
+  return listString + " for a score of " + _score + ":";
 }
 
 
@@ -271,8 +282,8 @@ function generateListString(_score, _list) {
  *
 */
 
-String.prototype.replaceAt = (index, replacement) => {
-  return this.substr(0, index) + replacement+ this.substr(index+1);
+String.prototype.replaceAt = function(index, replacement) {
+  return this.substr(0, index) + replacement + this.substr(index+1);
 }
 
 //TODO make it work both ways
@@ -288,7 +299,7 @@ function genSimilars(_string) {
   }
   //Imcrement through the possibilities in the same way that you increment base 2 numbers
   const newList = gen(aeList, 0, []);
-  const completeList = [newString];
+  let completeList = [newString];
   
   for(let i = 0; i < newList.length; i++){
     const aeWordList = newList[i];
@@ -305,9 +316,7 @@ function genSimilars(_string) {
 function gen(_aeList, _index, _newList) {
   const aeList = JSON.parse(JSON.stringify(_aeList));
 
-  if(_index === aeList.length){
-      return _newList;
-  }
+  if(_index === aeList.length) return _newList;
 
   //Check _index bit
   if(aeList[_index][0] === aeList[_index][1]){
@@ -318,9 +327,8 @@ function gen(_aeList, _index, _newList) {
     }
     _newList.push(aeList); //Add new combination
     _index = 0;
-  }else{
-    _index++; //Check next bit
-  }
+  }else _index++; //Check next bit
+  
   return gen(aeList, _index, _newList);
 }
 
@@ -446,6 +454,7 @@ function startWorkers(_spinner, _string, _args) {
 function write(_account) {
   fs.appendFileSync("flash-vanity-" + inputArg.l +".txt", _account, (err) => {
     if(err){
+      console.log("Error writing to file:");
       console.log(err);
       cleanup();
     }
