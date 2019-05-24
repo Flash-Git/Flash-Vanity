@@ -15,7 +15,7 @@ const inputArg = require("yargs")
   .default("n", 10)
   .alias("score", "scoreThreshold")//old c
   .describe("score", "Score required to return address")
-  .default("score", 0)
+  .default("score", 1)
   .alias("sl", "searchLocation")
   .describe("sl", "Multipliers for where to look for string")
   .default("sl", "1, 0, 0")
@@ -145,7 +145,7 @@ function masterRun() {
 
   write(searchMsg);
 
-  startWorkers(spinner, string, { rareAdds, searchLoc, zeroMult: inputArg.zm, dynScore: inputArg.d });
+  startWorkers(spinner, string, { rareAdds, searchLoc, zeroMult: inputArg.zm, dynScore: inputArg.d, score: inputArg.score });
 }
 
 function generateAccounts() {
@@ -154,7 +154,8 @@ function generateAccounts() {
     rareAdds: process.env.rareAdds.split(","),
     searchLoc: process.env.searchLoc.split(","),
     zeroMult: process.env.zeroMult,
-    dynScore: process.env.dynScore
+    dynScore: process.env.dynScore,
+    score: process.env.score
   }
 
   //Total number of generated accounts
@@ -178,9 +179,7 @@ function generateAccounts() {
     }
     
     const resultMsg = filter(account.address, stringArray, args);
-    if(resultMsg === ""){
-      continue;
-    }
+    if(resultMsg === false) continue;
 
     process.send({
       msg: (resultMsg + "\nAddress: " + account.address + ", Key: " + account.privKey)
@@ -193,7 +192,7 @@ function filter(_address, _stringArray, _args) {
   address = _address.substring(2);
 
   let score = 0;
-  let zeroScore = 0;
+  //let zeroScore = 0;
   let list = [];
 
   if(_args.rareAdds[0]){
@@ -201,10 +200,6 @@ function filter(_address, _stringArray, _args) {
   }
   if(_args.rareAdds[1]){
     if(isValidTxt(address)) return generateListString("letter", []);
-  }
-
-  if(_args.zeroMult > 0){
-    zeroScore = setZeroMult(address, _args.zeroMult);
   }
 
   if(_args.searchLoc[0] > 0){
@@ -215,7 +210,11 @@ function filter(_address, _stringArray, _args) {
     }
   }
 
-  score = score * zeroScore;
+  /*if(_args.zeroMult > 0){
+    zeroScore = setZeroMult(address, _args.zeroMult);
+    score *= zeroScore;
+    if(zeroScore-1 > _args.score) list.push("zeros");
+  }*/
 
   if(score < _args.score) return false;
 
@@ -228,14 +227,17 @@ function checkChar(_address, _index, _stringArray) {
   for(let i = 0; i < _stringArray.length; i++){
     const string = _stringArray[i][0];
     if(string.length+_index >= _address.length) continue;
+    let removed = false;
     for(let j = 0; j < string.length; j++){
-      if(_address[_index+j] !== string[j]) break;
+      if(_address[_index+j] !== string[j]){
+        removed = true;
+        break;
+      }
+      
     }
-    newArray.push(_stringArray[i]);
+    if(!removed) newArray.push(_stringArray[i]);
   }
-  if(newArray.length === 0){
-    return false;
-  }
+  if(newArray.length === 0) return false;
 
   let highScore = ["", 1]; 
   for(let i = 0; i < newArray.length; i++){
@@ -400,7 +402,8 @@ function startWorkers(_spinner, _string, _args) {
       rareAdds: _args.rareAdds,
       searchLoc: _args.searchLoc,
       zeroMult: _args.zeroMult,
-      dynScore: _args.dynScore
+      dynScore: _args.dynScore,
+      score: _args.score
     }
     proc = cluster.fork(worker_env);
     proc.on("message", message => {
