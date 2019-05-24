@@ -13,9 +13,9 @@ const inputArg = require("yargs")
   .alias("n", "number")
   .describe("n", "Number of matching addresses to generate")//find is more accurate
   .default("n", 10)
-  .alias("score", "scoreThreshold")//old c
-  .describe("score", "Score required to return address")
-  .default("score", 1)
+  .alias("c", "scoreThreshold")
+  .describe("c", "Score required to return address")
+  .default("c", 1)
   .alias("sl", "searchLocation")
   .describe("sl", "Multipliers for where to look for string")
   .default("sl", "1, 0, 0")
@@ -134,7 +134,7 @@ function masterRun() {
     return stringList.join(" or ");
   };
 
-  const searchMsg = "Searching for addresses including" + (inputArg.score > 0 ? " " + inputArg.score + " of" : "") + " " + 
+  const searchMsg = "Searching for addresses including" + (inputArg.c > 0 ? " " + inputArg.c + " of" : "") + " " + 
     (stringList.length > 1 ? "either " : "") + shortString() + "...\n"
   
   console.log("\n"+ searchMsg);
@@ -145,7 +145,7 @@ function masterRun() {
 
   write(searchMsg);
 
-  startWorkers(spinner, string, { rareAdds, searchLoc, zeroMult: inputArg.zm, dynScore: inputArg.d, score: inputArg.score });
+  startWorkers(spinner, string, { rareAdds, searchLoc, zeroMult: inputArg.zm, dynScore: inputArg.d, score: inputArg.c });
 }
 
 function generateAccounts() {
