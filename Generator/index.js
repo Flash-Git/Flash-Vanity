@@ -66,8 +66,9 @@ function masterRun() {
   let string = inputArg.s;
   let rareAdds = inputArg.ra;
   let searchLoc = inputArg.sl;
+  let score = inputArg.c;
 
-  const cleanString = (_string) => {
+  const cleanString = _string => {
     try{
       return _string.toLowerCase().split(" ").join("");
     }catch(e){
@@ -80,8 +81,9 @@ function masterRun() {
   //Clean strings
   try{
     string = cleanString(string);
-    rareAdds = cleanString(inputArg.ra);
-    searchLoc = cleanString(inputArg.sl);
+    rareAdds = cleanString(rareAdds);
+    searchLoc = cleanString(searchLoc);
+    score = 16**score;
   }catch(e){
     //console.log(e);
     return;
@@ -141,7 +143,7 @@ function masterRun() {
     return stringList.join(" or ");
   };
 
-  const searchMsg = "Searching for addresses including" + (inputArg.c > 0 ? " " + inputArg.c + " of" : "") + " " + 
+  const searchMsg = "Searching for addresses including" + (score > 0 ? " " + score + " of" : "") + " " + 
     (stringList.length > 1 ? "either " : "") + shortString() + "...\n"
   
   console.log("\n"+ searchMsg);
@@ -152,7 +154,7 @@ function masterRun() {
 
   write(searchMsg);
 
-  startWorkers(spinner, string, { rareAdds, searchLoc, zeroMult: inputArg.zm, dynScore: inputArg.d, score: inputArg.c });
+  startWorkers(spinner, string, { rareAdds, searchLoc, zeroMult: inputArg.zm, dynScore: inputArg.d, score });
 }
 
 function generateAccounts() {
@@ -208,7 +210,7 @@ function filter(_address, _stringArray, _args) {
     if(isValidTxt(address)) return generateListString("letter", ["number"]);
   }
 
-  const handleString = (_index) => {
+  const handleString = _index => {
     const string = checkChar(address, _index, _stringArray);
     if(string){
       list.push(string[0]);
@@ -509,29 +511,7 @@ process.on("uncaughtException", cleanup.bind(null, {}));
 
 run();
 
-// let strings = [[aaa5, 0], [aaa4, 0], [aab2, 0], [aa68, 0], [bab2, 0], [bac9, 0], [cac9, 0], [dadd, 0], [dadf, 0]];
+LetterObj = {
 
+}
 
-// //create list of index 0s
-// let strings0 = [aaa5, bab2, cac9];
-
-// let strings = [[a, [aa, [aaa, [aaa5, aaa4]], [aab2, aa68]]], [ba, [bab2, bac9]], [cac9], [dad, [dadd, dadf]]];
-// strings[0] = [a, [aa, [aaa, [aaa5, aaa4]], [aab2, aa68]]];
-// strings[0][0] = a;
-// strings[0][1] = [aa, [aaa, [aaa5, aaa4]], [aab2, aa68]];
-// strings[0][1][0] = aa;
-// strings[0][1][1] = [aaa, [aaa5, aaa4]];
-// strings[0][1][2] = [aab2, aa68];
-// -strings[0][1][2][0] = aab2;
-// -strings[0][1][2][1] = aa68;
-// strings[0][1][1][0] = aaa;
-// strings[0][1][1][1] = [aaa5, aaa4];
-// -strings[0][1][1][1][0] = aaa5;
-// -strings[0][1][1][1][1] = aaa4;
-// strings[1] = [ba, [bab2, bac9]];
-// strings[1][0] = ba;
-// strings[1][1] = [bab2, bac9];
-// -strings[1][1][0] = bab2;
-// -strings[1][1][1] = bac9;
-// strings[2] = [cac9];
-// strings[3] = [dad, [dadd, dadf]];
