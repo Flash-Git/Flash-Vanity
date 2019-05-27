@@ -573,12 +573,17 @@ function makeObj(_index, _strings, _createdString = "") {
 }
 
 
-const strings = ["ag", "aghh", "ajiy", "bpo", "bpu", "c"];
+const strings = ["ag", "aghh", "ajiy", "bpo", "bpz", "c"];
 
 const baseLetter = makeObj(0, strings);
 
+//PROBLEM
+//aghh is replacing "bpz"
+console.log(baseLetter.nextLetters[0].nextLetters[0].nextLetters[0].nextLetters[0].createdString)
+console.log(baseLetter.nextLetters[1].nextLetters[0].nextLetters[1].nextLetters[0].createdString)
+
 const checkMatch = (_letterObj, _address, _index, _longestString = "") => {
-  let longestString = "";
+  let longestString = _longestString;
   let char = _address[_index];
 
   if(_letterObj.createdString !== ""){
@@ -592,6 +597,6 @@ const checkMatch = (_letterObj, _address, _index, _longestString = "") => {
   return longestString;
 }
 
-const match = checkMatch(baseLetter, "aghh", 0);
+const match = checkMatch(baseLetter, "agh", 0);
 console.log(match);
 exit()
