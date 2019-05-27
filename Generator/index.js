@@ -509,9 +509,66 @@ process.on("exit", cleanup.bind(null, {}));
 process.on("SIGINT", cleanup.bind(null, {}));
 process.on("uncaughtException", cleanup.bind(null, {}));
 
-run();
+//run();
 
-LetterObj = {
 
+function LetterObj() {
+  this.letters = [];
+  this.createdStrings = [];
+  this.nextLetters = [];
 }
 
+
+const splitStrings = (_index, _strings) => {
+  let counter = 0;
+  let outputArr = [[]];
+  let currentChar = _strings[0][_index];
+
+  for(let i = 0; i < _strings.length; i++){
+    if(_strings[i][_index] === currentChar){
+      outputArr[counter].push(_strings[i]);
+    }else{
+      counter++;
+      outputArr.push([strings[i]]);
+      currentChar = _strings[i][_index];
+    }
+  }
+  return outputArr;
+}
+
+function makeObj(_index, _strings) {
+  //console.log(_index)
+  const letterObj = new LetterObj();
+  const splitArr = splitStrings(_index, _strings);
+	for(let i = 0; i < splitArr.length; i++){
+    let innerList = [];
+    console.log(splitArr[i][0][_index])
+    letterObj.letters.push(splitArr[i][0][_index]);
+    for(let j = 0; j < splitArr[i].length; j++){
+      let inner = splitArr[i][j];
+      if(inner.length === _index+1){
+        letterObj.createdStrings.push(inner);
+        //console.log("string found: " + inner)
+      }else{
+        innerList.push(inner);
+      }
+    }
+    
+    if(innerList.length === 0) continue;
+
+    letterObj.nextLetters.push(makeObj(_index+1, innerList));
+  }
+
+	return letterObj;
+}
+
+
+const strings = ["at", "abaa", "abc", "acd", "ba"];
+
+const baseLetter = makeObj(0, strings);
+console.log(baseLetter.letters)
+console.log(baseLetter.nextLetters[0].letters)
+console.log(baseLetter.nextLetters[0].nextLetters[0].letters)
+
+
+exit();
