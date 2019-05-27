@@ -514,7 +514,7 @@ process.on("uncaughtException", cleanup.bind(null, {}));
 
 function LetterObj() {
   this.letters = [];
-  this.createdStrings = [];
+  this.createdString = "";
   this.nextLetters = [];
 }
 
@@ -536,39 +536,62 @@ const splitStrings = (_index, _strings) => {
   return outputArr;
 }
 
-function makeObj(_index, _strings) {
-  //console.log(_index)
+function makeObj(_index, _strings, _createdString = "") {
   const letterObj = new LetterObj();
+  letterObj.createdString = _createdString;
+
+  if(_strings.length === 0) return letterObj;
+
+  //Split strings into arrays where all characters up to and including _index are the same
   const splitArr = splitStrings(_index, _strings);
-	for(let i = 0; i < splitArr.length; i++){
-    let innerList = [];
-    console.log(splitArr[i][0][_index])
+  //Loop through each character's array
+  for(let i = 0; i < splitArr.length; i++){
+    //Add each character into this object's letter array
     letterObj.letters.push(splitArr[i][0][_index]);
+
+    let createdString = "";
+    //innerList is the array of strings that still need to be placed
+    let innerList = [];
+
+    //Loop through every string in the character array
     for(let j = 0; j < splitArr[i].length; j++){
+      //inner is the full string
       let inner = splitArr[i][j];
-      if(inner.length === _index+1){
-        letterObj.createdStrings.push(inner);
-        //console.log("string found: " + inner)
-      }else{
+
+      //If the first element's length matches the index, it is a created string
+      if(inner.length-1 === _index && j === 0){
+        createdString = inner;
+      }else{//Else, it still needs to be placed
         innerList.push(inner);
       }
     }
-    
-    if(innerList.length === 0) continue;
-
-    letterObj.nextLetters.push(makeObj(_index+1, innerList));
+    //We go AGAIN
+    letterObj.nextLetters.push(makeObj(_index+1, innerList, createdString));
   }
 
 	return letterObj;
 }
 
 
-const strings = ["at", "abaa", "abc", "acd", "ba"];
+const strings = ["ag", "aghh", "ajiy", "bpo", "bpu", "c"];
 
 const baseLetter = makeObj(0, strings);
-console.log(baseLetter.letters)
-console.log(baseLetter.nextLetters[0].letters)
-console.log(baseLetter.nextLetters[0].nextLetters[0].letters)
 
+const checkMatch = (_letterObj, _address, _index, _longestString = "") => {
+  let longestString = "";
+  let char = _address[_index];
 
-exit();
+  if(_letterObj.createdString !== ""){
+    longestString = _letterObj.createdString;
+  }
+
+  for(let i = 0; i < _letterObj.letters.length; i++){
+    if(char !== _letterObj.letters[i]) continue;
+    return checkMatch(_letterObj.nextLetters[i], _address, _index+1, longestString);
+  }
+  return longestString;
+}
+
+const match = checkMatch(baseLetter, "aghh", 0);
+console.log(match);
+exit()
