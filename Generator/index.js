@@ -158,7 +158,8 @@ function masterRun() {
 }
 
 function generateAccounts() {
-  const stringArray = process.env.string.split(",");
+  const newStringArray = JSON.parse(process.env.string);
+  //const stringArray = process.env.string.split(",");
   const args = {
     rareAdds: process.env.rareAdds.split(","),
     searchLoc: process.env.searchLoc.split(","),
@@ -398,6 +399,64 @@ function checkString(_stringArray) {
 *
 */
 
+function LetterObj() {
+  this.createdString = "";
+  this.letters = [];
+  this.nextLetters = [];
+}
+
+function makeObj(_index, _strings, _createdString = ["", 0]) {
+  const letterObj = new LetterObj();
+  letterObj.createdString = _createdString;
+
+  if(_strings.length === 0) return letterObj;
+
+  const splitStrings = (_index, _strings) => {
+    let counter = 0;
+    let outputArr = [[]];
+    let currentChar = _strings[0][0][_index];
+
+    for(let i = 0; i < _strings.length; i++){
+      if(_strings[i][0][_index] === currentChar){
+        outputArr[counter].push(_strings[i]);
+      }else{
+        counter++;
+        outputArr.push([_strings[i]]);
+        currentChar = _strings[i][0][_index];
+      }
+    }
+    return outputArr;
+  }
+
+  //Split strings into arrays where all characters up to and including _index are the same
+  const splitArr = splitStrings(_index, _strings);
+  //Loop through each character's array
+  for(let i = 0; i < splitArr.length; i++){
+    //Add each character into this object's letter array
+    letterObj.letters.push(splitArr[i][0][0][_index]);
+
+    let createdString = ["", 0];
+    //innerList is the array of strings that still need to be placed
+    let innerList = [];
+
+    //If the first element's length matches the index, it is a created string
+    if(splitArr[i][0][0].length-1 === _index){
+      createdString = splitArr[i][0];
+    }
+
+    //Loop through every string in the character array
+    for(let j = 0; j < splitArr[i].length; j++){
+      //inner is the full string
+      let inner = splitArr[i][j];
+      //still needs to be placed
+      if(j > 0 || createdString[0] === "") innerList.push(inner);
+    }
+    //We go AGAIN
+    letterObj.nextLetters.push(makeObj(_index+1, innerList, createdString));
+  }
+	return letterObj;
+}
+
 function startWorkers(_spinner, _string, _args) {
   //Successfully generated addresses
   let accCount = 0;
@@ -406,9 +465,21 @@ function startWorkers(_spinner, _string, _args) {
   let lastGeneration = 0;
   let lastTime = Date.now();
 
+  let stringArray = _string.split(",");
+  //Set scores in array
+  for(let i = 0; i < stringArray.length; i++){
+    stringArray[i] = stringArray[i].split("-");
+    stringArray[i][1] = +stringArray[i][1];
+  }
+
+  let newString = JSON.stringify(makeObj(0, stringArray.split(",")));
+
+  //console.log(JSON.parse(newString));
+  //okokokokokok
+
   for(let i = 0; i < inputArg.t; i++){
     const worker_env = {
-      string: _string,
+      string: newString,
       rareAdds: _args.rareAdds,
       searchLoc: _args.searchLoc,
       zeroMult: _args.zeroMult,
@@ -435,7 +506,7 @@ function startWorkers(_spinner, _string, _args) {
       }
       if(message.incr){
         generationTotal += 500;
-      }
+      }-5
     });
   }
 
@@ -512,73 +583,19 @@ process.on("uncaughtException", cleanup.bind(null, {}));
 //run();
 
 
-function LetterObj() {
-  this.createdString = "";
-  this.letters = [];
-  this.nextLetters = [];
+
+const stringArray = ["ag-5", "aghh-5", "ajiy-5", "bpo-5", "bpz-5", "c-5"];
+
+//Set scores in array
+for(let i = 0; i < stringArray.length; i++){
+  stringArray[i] = stringArray[i].split("-");
+  stringArray[i][1] = +stringArray[i][1];
 }
 
-
-const splitStrings = (_index, _strings) => {
-  let counter = 0;
-  let outputArr = [[]];
-  let currentChar = _strings[0][_index];
-
-  for(let i = 0; i < _strings.length; i++){
-    if(_strings[i][_index] === currentChar){
-      outputArr[counter].push(_strings[i]);
-    }else{
-      counter++;
-      outputArr.push([_strings[i]]);
-      currentChar = _strings[i][_index];
-    }
-  }
-  return outputArr;
-}
-
-function makeObj(_index, _strings, _createdString = "") {
-  const letterObj = new LetterObj();
-  letterObj.createdString = _createdString;
-
-  if(_strings.length === 0) return letterObj;
-
-  //Split strings into arrays where all characters up to and including _index are the same
-  const splitArr = splitStrings(_index, _strings);
-  //Loop through each character's array
-  for(let i = 0; i < splitArr.length; i++){
-    //Add each character into this object's letter array
-    letterObj.letters.push(splitArr[i][0][_index]);
-
-    let createdString = "";
-    //innerList is the array of strings that still need to be placed
-    let innerList = [];
-
-    //If the first element's length matches the index, it is a created string
-    if(splitArr[i][0].length-1 === _index){
-      createdString = splitArr[i][0];
-    }
-
-    //Loop through every string in the character array
-    for(let j = 0; j < splitArr[i].length; j++){
-      //inner is the full string
-      let inner = splitArr[i][j];
-      //still needs to be placed
-      if(j > 0 || createdString === "") innerList.push(inner);
-    }
-    //We go AGAIN
-    letterObj.nextLetters.push(makeObj(_index+1, innerList, createdString));
-  }
-
-	return letterObj;
-}
-
-
-const strings = ["ag", "aghh", "ajiy", "bpo", "bpz", "c"];
-
-const baseLetter = makeObj(0, strings);
+let newString = makeObj(0, stringArray);
 
 const checkMatch = (_letterObj, _address, _index, _longestString = "") => {
-  if(_letterObj.createdString !== "") _longestString = _letterObj.createdString;
+  if(_letterObj.createdString[0] !== "") _longestString = _letterObj.createdString;
 
   for(let i = 0; i < _letterObj.letters.length; i++){
     if(_address[_index] !== _letterObj.letters[i]) continue;
@@ -587,6 +604,7 @@ const checkMatch = (_letterObj, _address, _index, _longestString = "") => {
   return _longestString;
 }
 
-const match = checkMatch(baseLetter, "aghh", 0);
+const match = checkMatch(newString, "ajiydd", 0);
 console.log(match);
 exit()
+
