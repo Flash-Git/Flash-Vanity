@@ -159,7 +159,7 @@ function masterRun() {
 
 function generateAccounts() {
   const newStringArray = JSON.parse(process.env.string);
-  //const stringArray = process.env.string.split(",");
+
   const args = {
     rareAdds: process.env.rareAdds.split(","),
     searchLoc: process.env.searchLoc.split(","),
@@ -170,12 +170,6 @@ function generateAccounts() {
 
   //Total number of generated accounts
   let accGened = 0;
-
-  //Set scores in array
-  for(let i = 0; i < stringArray.length; i++){
-    stringArray[i] = stringArray[i].split("-");
-    stringArray[i][1] = +stringArray[i][1];
-  }
   
   while(true){
     const account = getNewAccount();
@@ -188,7 +182,7 @@ function generateAccounts() {
       });
     }
     
-    const resultMsg = filter(account.address, stringArray, args);
+    const resultMsg = filter(account.address, newStringArray, args);
     if(resultMsg === false) continue;
 
     process.send({
@@ -197,7 +191,18 @@ function generateAccounts() {
   }
 }
 
-function filter(_address, _stringArray, _args) {
+function checkMatch(_letterObj, _address, _index, _longestString = "") {
+  if(_letterObj.createdString[1] > 0) _longestString = _letterObj.createdString;
+
+  for(let i = 0; i < _letterObj.letters.length; i++){
+    console.log(i)
+    if(_address[_index] !== _letterObj.letters[i]) continue;
+    return checkMatch(_letterObj.nextLetters[i], _address, _index+1, _longestString);
+  }
+  return _longestString;
+}
+
+function filter(_address, _newStringArray, _args) {
   //Remove 0x
   address = _address.substring(2);
 
@@ -210,7 +215,13 @@ function filter(_address, _stringArray, _args) {
   if(_args.rareAdds[1]){
     if(isValidTxt(address)) return generateListString("letter", ["number"]);
   }
+  const match = checkMatch(_newStringArray, address, 0);
 
+  if(match[1]>0){
+    list.push(match[0]);
+    score*=(match[1]*_args.searchLoc[0]);
+  }
+  /*
   const handleString = _index => {
     const string = checkChar(address, _index, _stringArray);
     if(string){
@@ -233,6 +244,8 @@ function filter(_address, _stringArray, _args) {
       }else score--;
     }
   }
+
+  */
 
   if(score < _args.score) return false;
 
@@ -472,10 +485,7 @@ function startWorkers(_spinner, _string, _args) {
     stringArray[i][1] = +stringArray[i][1];
   }
 
-  let newString = JSON.stringify(makeObj(0, stringArray.split(",")));
-
-  //console.log(JSON.parse(newString));
-  //okokokokokok
+  let newString = JSON.stringify(makeObj(0, stringArray));
 
   for(let i = 0; i < inputArg.t; i++){
     const worker_env = {
@@ -580,31 +590,4 @@ process.on("exit", cleanup.bind(null, {}));
 process.on("SIGINT", cleanup.bind(null, {}));
 process.on("uncaughtException", cleanup.bind(null, {}));
 
-//run();
-
-
-
-const stringArray = ["ag-5", "aghh-5", "ajiy-5", "bpo-5", "bpz-5", "c-5"];
-
-//Set scores in array
-for(let i = 0; i < stringArray.length; i++){
-  stringArray[i] = stringArray[i].split("-");
-  stringArray[i][1] = +stringArray[i][1];
-}
-
-let newString = makeObj(0, stringArray);
-
-const checkMatch = (_letterObj, _address, _index, _longestString = "") => {
-  if(_letterObj.createdString[0] !== "") _longestString = _letterObj.createdString;
-
-  for(let i = 0; i < _letterObj.letters.length; i++){
-    if(_address[_index] !== _letterObj.letters[i]) continue;
-    return checkMatch(_letterObj.nextLetters[i], _address, _index+1, _longestString);
-  }
-  return _longestString;
-}
-
-const match = checkMatch(newString, "ajiydd", 0);
-console.log(match);
-exit()
-
+run();
