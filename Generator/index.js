@@ -128,10 +128,9 @@ function masterRun() {
   }
 
   //Sort string
-  
   const stringList = string.split(",").sort();
-  //console.log(stringList)
-  //Join first 3 entries for output log
+
+  //Short string
   const shortString = () => {
     if(stringList.length > 3){
       let shortStringList = [];
@@ -214,45 +213,41 @@ function filter(_address, _newStringArray, _args) {
   if(_args.rareAdds[1]){
     if(isValidTxt(address)) return generateListString("letter", ["number"]);
   }
-  const match = checkMatch(_newStringArray, address, 0);
 
-  if(match[1]>0){
-    list.push(match[0]);
-    score*=(match[1]*_args.searchLoc[0]);
-  }
-  /*
-  const handleString = _index => {
-    const string = checkChar(address, _index, _stringArray);
-    if(string){
-      list.push(string[0]);
-      score*=(string[1]*_args.searchLoc[0]);//for first char TODO
+  const handleMatch = (_index, _match) => {
+    if(_match === ""){
+      return false;
     }
+    list.push(_match[0]);
+    if(_index === 0){
+      if(_args.searchLoc[0] > 0) score*=(_match[1]*_args.searchLoc[0]);
+      else score*=_match[1];
+      return true;
+    }
+    score*=_match[1];
+    return true;
   }
 
-  if(_args.searchLoc[0] > 0){
-    handleString(0);
-  }
-
+  
+  handleMatch(0, checkMatch(_newStringArray, address, 0));
+  
   if(_args.zeroMult > 0){
     if(score === 1){
       const zeros = setZeroMult(address);
-      if(zeros > 0){
+      if(zeros > 1){//2 zeros for a byte (doesn't take into account strings starting with 0)
         list.push("zeros");
         score = 16**(zeros*_args.zeroMult);
-        handleString(zeros);
+        handleMatch(zeros, checkMatch(_newStringArray, address, zeros));
       }else score--;
     }
   }
-
-  */
 
   if(score < _args.score) return false;
 
   return generateListString(score, list);
 }
 
-//Optimisation possible by keeping track of strings that have beginnings that have already been dismissed
-//Can make recursive to check for chained strings
+//Old check
 function checkChar(_address, _index, _stringArray) {
   let newArray = [];
   for(let i = 0; i < _stringArray.length; i++){
