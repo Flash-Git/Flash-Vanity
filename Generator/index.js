@@ -195,7 +195,6 @@ function checkMatch(_letterObj, _address, _index, _longestString = "") {
   if(_letterObj.createdString[1] > 0) _longestString = _letterObj.createdString;
 
   for(let i = 0; i < _letterObj.letters.length; i++){
-    console.log(i)
     if(_address[_index] !== _letterObj.letters[i]) continue;
     return checkMatch(_letterObj.nextLetters[i], _address, _index+1, _longestString);
   }
