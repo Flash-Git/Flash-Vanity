@@ -129,8 +129,8 @@ function masterRun() {
 
   //Sort string
   
-  const stringList = string.split(",");
-
+  const stringList = string.split(",").sort();
+  //console.log(stringList)
   //Join first 3 entries for output log
   const shortString = () => {
     if(stringList.length > 3){
@@ -483,7 +483,6 @@ function startWorkers(_spinner, _string, _args) {
     stringArray[i] = stringArray[i].split("-");
     stringArray[i][1] = +stringArray[i][1];
   }
-
   let newString = JSON.stringify(makeObj(0, stringArray));
 
   for(let i = 0; i < inputArg.t; i++){
@@ -495,7 +494,13 @@ function startWorkers(_spinner, _string, _args) {
       dynScore: _args.dynScore,
       score: _args.score
     }
-    proc = cluster.fork(worker_env);
+    try{
+      proc = cluster.fork(worker_env);
+    }catch(e){
+      console.log("Error: ");
+      console.log(e);
+      return;
+    }
     proc.on("message", message => {
       if(message.msg){
         if(accCount >= inputArg.n){
