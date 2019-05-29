@@ -11,7 +11,7 @@ const inputArg = require("yargs")
   .describe("s", "String to find in addresses, supports multiple strings seperated by commas")
   .demandOption(["s"])
   .alias("n", "number")
-  .describe("n", "Number of matching addresses to generate")//find is more accurate
+  .describe("n", "Number of matching addresses to generate")
   .default("n", 10)
   .alias("c", "scoreThreshold")
   .describe("c", "Score required to return address")
@@ -21,7 +21,7 @@ const inputArg = require("yargs")
   .default("sl", "1, 0, 0")
   .alias("zm", "zeroMult")
   .describe("zm", "Multiplier for leading zeros")
-  .default("zm", 2)
+  .default("zm", 0)
   .alias("ra", "rareAddresses")
   .describe("ra", "Toggle check for letter or number addresses")
   .default("ra", "false, false")
@@ -40,10 +40,12 @@ const inputArg = require("yargs")
   .alias("sa", "similar addresses")
   .describe("sa", "Toggle generation of similar strings")
   .default("sa", false)
-  .example("$0 -s '1337' | Finds addresses containing '1337'")
-  .example("$0 -s '1337, b00b5' | Finds addresses containing either '1337' or 'b00b5'")
-  .example("$0 -n 50 -s '1337' | Finds 50 addresses containing '1337'")
-  //.example("$0 -s '1337, b00b5' -p '2' | Finds addresses containing both '1337' and 'b00b5'")
+  .example("$0 -s '1337' | Finds 10 addresses starting with '1337'")
+  .example("$0 -s '1337' --ra true, true | Finds 10 addresses starting with '1337' or addresses made up of only letters or addresses made up of only numbers")
+  .example("$0 -s '1337' -t 1 | Finds 10 addresses starting with '1337' using only 1 thread")
+  .example("$0 -s '1337, b00b5' | Finds 10 addresses starting with either '1337' or 'b00b5'")
+  .example("$0 -s '1337' -n 50 | Finds 50 addresses starting with '1337'")
+  .example("$0 -s 'aa' --sa true --zm 1 -c 5 | Finds 10 addresses starting with 'aa' or 'a4' or '4a' or '44' or enough leading zeros to reach score")
   .help("h")
   .alias("h", 'help')
   .argv;
@@ -142,7 +144,7 @@ function masterRun() {
     return stringList.join(" or ");
   };
 
-  const searchMsg = "Searching for addresses including" + (score > 0 ? " " + score + " of" : "") + " " + 
+  const searchMsg = "Searching for addresses reaching a score of" + (score > 0 ? " " + score + " in" : "") + " " + 
     (stringList.length > 1 ? "either " : "") + shortString() + "...\n"
   
   console.log("\n"+ searchMsg);
