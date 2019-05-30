@@ -131,6 +131,7 @@ function masterRun() {
 
   //Sort string
   const stringList = string.split(",").sort();
+  string = stringList.join(",")
 
   //Short string
   const shortString = () => {
@@ -305,8 +306,10 @@ function genSimilars(_string) {
   for(let i = 0; i < newString.length; i++){
     if(newString[i] === "a"){
       aeList.push(["a", "a", "4", i]);
-    } else if(newString[i] === "e"){
+    }else if(newString[i] === "e"){
       aeList.push(["e", "e", "3", i]);
+    }else if(newString[i] === "b"){
+      aeList.push(["b", "b", "6", i]);
     }
   }
   //Imcrement through the possibilities in the same way that you increment base 2 numbers
@@ -362,7 +365,7 @@ function getNewAccount() {
 *
 */
 
-
+//TODO
 function checkCommand(_string) {
   if(!typeof(argv.n) === "number" && argv.n > 0){
     console.log("Invalid number: " + argv.n);
