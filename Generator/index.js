@@ -178,7 +178,7 @@ function generateAccounts() {
     
     accGened++;
     
-    if(accGened%500 === 499){
+    if(accGened%5000 === 4999){
       process.send({
         incr: true
       });
@@ -193,7 +193,7 @@ function generateAccounts() {
   }
 }
 
-function checkMatch(_letterObj, _address, _index, _longestString = "") {
+function checkMatch(_letterObj, _address, _index, _longestString = false) {//is using boolean better than empty string?
   if(_letterObj.createdString[1] > 0) _longestString = _letterObj.createdString;
 
   for(let i = 0; i < _letterObj.letters.length; i++){
@@ -218,19 +218,17 @@ function filter(_address, _newStringArray, _args) {
   }
 
   const handleMatch = (_index, _match) => {
-    if(_match === ""){
-      return false;
-    }
+    if(!_match) return false;
+    
     list.push(_match[0]);
     if(_index === 0){
-      if(_args.searchLoc[0] > 0) score*=(_match[1]*_args.searchLoc[0]);
+      if(_args.searchLoc[0] > 0) score = _match[1]*_args.searchLoc[0];//Apply start of string bonus
       else score*=_match[1];
       return true;
     }
     score*=_match[1];
     return true;
   }
-
   
   handleMatch(0, checkMatch(_newStringArray, address, 0));
   
@@ -362,7 +360,7 @@ function getNewAccount() {
 
 /*
 * RUN CLEANING AND CHECKS
-*
+* TODO
 */
 
 //TODO
@@ -519,8 +517,8 @@ function startWorkers(_spinner, _string, _args) {
           _spinner.start();
       }
       if(message.incr){
-        generationTotal += 500;
-      }-5
+        generationTotal += 5000;
+      }
     });
   }
 
