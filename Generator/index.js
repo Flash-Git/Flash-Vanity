@@ -169,6 +169,9 @@ function generateAccounts() {
     dynScore: process.env.dynScore,
     score: process.env.score
   }
+  
+  rareAdds[0] = rareAdds[0] === "true" ? true : false;
+  rareAdds[1] = rareAdds[1] === "true" ? true : false;
 
   //Total number of generated accounts
   let accGened = 0;
