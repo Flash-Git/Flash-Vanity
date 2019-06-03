@@ -12,7 +12,7 @@ const inputArg = require("yargs")
   .demandOption(["s"])
   .alias("n", "number")
   .describe("n", "Number of matching addresses to generate")
-  .default("n", 10)
+  .default("n", "10")
   .alias("c", "count")
   .describe("c", "Score required to return address")
   .default("c", 1)
@@ -21,13 +21,13 @@ const inputArg = require("yargs")
   .default("sl", "1, 0, 0")
   .alias("zm", "zeroMult")
   .describe("zm", "Multiplier for leading zeros")
-  .default("zm", 0)
+  .default("zm", "0")
   .alias("ra", "rareAddresses")
   .describe("ra", "Toggle check for letter or number addresses")
   .default("ra", "false, false")
   .alias("d", "dynamicScore")
   .describe("d", "Toggle support for explicit score after each string entry")
-  .default("d", false)
+  .default("d", "false")
   .alias("l", "log")
   .describe("l", "Adds logging to the specified filename")
   .default("l", Date.now())
@@ -39,7 +39,7 @@ const inputArg = require("yargs")
   .default("r", 2000)
   .alias("sa", "similar addresses")
   .describe("sa", "Toggle generation of similar strings")
-  .default("sa", false)
+  .default("sa", "false")
   .example("$0 -s '1337' | Finds 10 addresses starting with '1337'")
   .example("$0 -s '1337' --ra true, true | Finds 10 addresses starting with '1337' or addresses made up of only letters or addresses made up of only numbers")
   .example("$0 -s '1337' -t 1 | Finds 10 addresses starting with '1337' using only 1 thread")
@@ -66,9 +66,13 @@ function run() {
 
 function masterRun() {
   let string = inputArg.s;
+  let number = inputArg.n;
   let rareAdds = inputArg.ra;
   let searchLoc = inputArg.sl;
   let score = inputArg.c;
+  let dynScore = inputArg.d;
+  let symAdds = inputArg.sa;
+  let zeroMult = inputArg.zm;
 
   const cleanString = _string => {
     try{
@@ -83,11 +87,15 @@ function masterRun() {
   //Clean strings
   try{
     string = cleanString(string);
+    number = +number;
     rareAdds = cleanString(rareAdds);
     searchLoc = cleanString(searchLoc);
-    score = 16**score;
+    score = 16**(+score);
+    zeroMult = +zeroMult;
+    dynScore = dynScore.toLowerCase() === "true" ? true : false;
+    symAdds = symAdds.toLowerCase() === "true" ? true : false;
   }catch(e){
-    //console.log(e);
+    console.log(e);
     return;
   }
 
@@ -101,7 +109,7 @@ function masterRun() {
   }
 
   //Add scores
-  if(!inputArg.d){
+  if(!dynScore){
     //Add score based on rarity
     let stringList = string.split(",");
     if(stringList.length === 0){
@@ -116,7 +124,7 @@ function masterRun() {
 
 
   //Generate similars
-  if(inputArg.sa){
+  if(symAdds){
     let newString = [];
     const stringList = string.split(",");
     for(let i = 0; i < stringList.length; i++){
@@ -150,13 +158,13 @@ function masterRun() {
   
   console.log("\n"+ searchMsg);
 
-  const spinner = ora("Searching for address number " + 1 + " of " + inputArg.n + "...");
+  const spinner = ora("Searching for address number " + 1 + " of " + number + "...");
   spinner.color = "cyan";
   spinner.start();
 
   write(searchMsg);
 
-  startWorkers(spinner, string, { rareAdds, searchLoc, zeroMult: inputArg.zm, dynScore: inputArg.d, score });
+  startWorkers(spinner, string, { number, rareAdds, searchLoc, zeroMult, score });
 }
 
 function generateAccounts() {
@@ -165,16 +173,13 @@ function generateAccounts() {
   const args = {
     rareAdds: process.env.rareAdds.split(","),
     searchLoc: process.env.searchLoc.split(","),
-    zeroMult: process.env.zeroMult,
-    dynScore: process.env.dynScore,
-    score: process.env.score
+    zeroMult: +process.env.zeroMult,
+    score: +process.env.score
   }
 
   //Convert args
   for(let i = 0; i < args.rareAdds.length; i++) args.rareAdds[i] = args.rareAdds[i] === "true" ? true : false;
   for(let i = 0; i < args.searchLoc.length; i++) args.searchLoc[i] = +args.searchLoc[i];
-  args.dynScore = args.dynScore === "true" ? true : false;
-  args.score = +args.score;
   
   //Total number of generated accounts
   let accGened = 0;
@@ -507,18 +512,18 @@ function startWorkers(_spinner, _string, _args) {
     }
     proc.on("message", message => {
       if(message.msg){
-        if(accCount >= inputArg.n){
+        if(accCount >= _args.number){
           return;
         }
         _spinner.succeed(accCount+1 + ". In address " + generationTotal + ", found " + message.msg + "\n");
         write(accCount+1 + ". In address " + generationTotal + ", found " + message.msg + "\n");
         accCount++;
-        if(accCount >= inputArg.n){
+        if(accCount >= _args.number){
           cleanup();
           _spinner.text = "Ending Process";
           return;
         }
-        _spinner.text = "Searching for address " + (accCount+1) + " of " + inputArg.n + " at a rate of " + 
+        _spinner.text = "Searching for address " + (accCount+1) + " of " + _args.number + " at a rate of " + 
           Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
           _spinner.start();
       }
@@ -529,7 +534,7 @@ function startWorkers(_spinner, _string, _args) {
   }
 
   setInterval(() => {
-    _spinner.text = "Searching for number " + (accCount+1) + " of " + inputArg.n + " at a rate of " + 
+    _spinner.text = "Searching for number " + (accCount+1) + " of " + _args.number + " at a rate of " + 
       Math.floor((generationTotal-lastGeneration)/(Date.now()-lastTime)*1000) + " addresses per second...";
     lastGeneration = generationTotal;
     lastTime = Date.now();
