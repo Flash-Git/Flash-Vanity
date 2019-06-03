@@ -169,10 +169,13 @@ function generateAccounts() {
     dynScore: process.env.dynScore,
     score: process.env.score
   }
-  
-  rareAdds[0] = rareAdds[0] === "true" ? true : false;
-  rareAdds[1] = rareAdds[1] === "true" ? true : false;
 
+  //Convert args
+  for(let i = 0; i < args.rareAdds.length; i++) args.rareAdds[i] = args.rareAdds[i] === "true" ? true : false;
+  for(let i = 0; i < args.searchLoc.length; i++) args.searchLoc[i] = +args.searchLoc[i];
+  args.dynScore = args.dynScore === "true" ? true : false;
+  args.score = +args.score;
+  
   //Total number of generated accounts
   let accGened = 0;
   
