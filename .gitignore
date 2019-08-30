@@ -63,3 +63,5 @@ typings/
 .vscode/
 
 client/src/res/
+
+Generator/vanity/*
