@@ -1,9 +1,15 @@
-import React, { Component } from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 
 import Blockie from "./Blockie";
 
 const Account = ({ account }) => {
+  const [open, setOpen] = useState(false);
+
+  const onClick = e => {
+    setOpen(!open);
+  };
+
   return (
     <div className="generatedAdd" style={generatedAddStyle}>
       <div style={{ width: "2em", float: "left", margin: "0.1rem" }}>
@@ -17,13 +23,17 @@ const Account = ({ account }) => {
           borderRight: "solid"
         }}
       >
-        <a href={"https://etherscan.io/address/" + account.address}>
+        <a href={`https://etherscan.io/address/ ${account.address}`}>
           {account.address}
         </a>
       </div>
-      <div style={{ width: "34em", float: "left", marginLeft: "0.2rem" }}>
-        {account.privKey}
-      </div>
+      {open ? (
+        <div style={{ width: "34em", float: "left", marginLeft: "0.2rem" }}>
+          {account.privKey}
+        </div>
+      ) : (
+        <button onClick={onClick}>Show Private Key</button>
+      )}
       <div style={{ width: "2em", float: "left", margin: "0.1rem" }}>
         <Blockie address={account.address} size="30px" />
       </div>
