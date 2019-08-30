@@ -268,7 +268,7 @@ function filter(_address, _newStringArray, _args) {
     if (isValidNum(address)) return generateListString("number", ["number"]);
   }
   if (_args.rareAdds[1]) {
-    if (isValidTxt(address)) return generateListString("letter", ["number"]);
+    if (isValidTxt(address)) return generateListString("letter", ["letter"]);
   }
 
   const handleMatch = (_index, _match) => {
@@ -347,11 +347,14 @@ function generateListString(_score, _list) {
 
 function displayScore(_score) {
   try {
-    return (Math.log(_score) / Math.log(16)).toFixed(2);
+    const score = (Math.log(_score) / Math.log(16)).toFixed(2);
+    return +score;
   } catch (e) {
     if (_score === "number" || score === "letter") {
+      //console.log("yes" + _score);
       return _score;
     }
+    //console.log("no" + _score);
   }
 }
 
@@ -640,13 +643,17 @@ function startWorkers(_spinner, _string, _args) {
  */
 
 function write(_account) {
-  fs.appendFileSync("flash-vanity-" + inputArg.l + ".txt", _account, err => {
-    if (err) {
-      console.log("Error writing to file:");
-      console.log(err);
-      cleanup();
+  fs.appendFileSync(
+    "vanity/flash-vanity-" + inputArg.l + ".txt",
+    _account,
+    err => {
+      if (err) {
+        console.log("Error writing to file:");
+        console.log(err);
+        cleanup();
+      }
     }
-  });
+  );
 }
 
 /*
