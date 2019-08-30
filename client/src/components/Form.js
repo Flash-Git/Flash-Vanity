@@ -1,45 +1,44 @@
+import React, { Component, useState, useContext, useEffect } from "react";
 import crypto from "crypto";
-
-import React, { Component } from "react";
+import { utils } from "ethers";
 import PropTypes from "prop-types";
-const ethUtils = require("ethereumjs-util");
 
 class Form extends Component {
+  state = {};
 
-  state = {
-  }
-  
-  onClickGenerate = (e) => {
+  onClickGenerate = e => {
     this.generateAccounts(20);
-  }
-  
-  onClickImport = (e) => {
-    this.importAccounts();
-  }
+  };
 
-  generateAccounts = (_num) => {
+  onClickImport = e => {
+    this.importAccounts();
+  };
+
+  generateAccounts = _num => {
     const accounts = [];
-    for(let i = 0; i < _num; i++){
+    for (let i = 0; i < _num; i++) {
       accounts.push(this.getNewAccount());
     }
     this.props.setAccounts(accounts);
-  }
+  };
 
   getNewAccount = () => {
     const privKey = crypto.randomBytes(32);
-    const address = "0x" + ethUtils.privateToAddress(privKey).toString("hex");
+    const address = "0x" + utils.computeAddress(privKey).toString("hex");
     return { address, privKey: privKey.toString("hex") };
-  }
+  };
 
-  importAccounts = () => {
+  importAccounts = () => {};
 
-  }
-
-  render(){
-    return(
-      <div id="section-form" className="section" style={ formStyle }>
-        <button onClick={ this.onClickGenerate } style={ btnStyle }>Generate Random</button>
-        <button onClick={ this.onClickImport } style={ btnStyle }>Import</button>
+  render() {
+    return (
+      <div id="section-form" className="section" style={formStyle}>
+        <button onClick={this.onClickGenerate} style={btnStyle}>
+          Generate Random
+        </button>
+        <button onClick={this.onClickImport} style={btnStyle}>
+          Import
+        </button>
         {/* Display Form that updates a command string to get desired flash-vanity address out of generator  */}
       </div>
     );
@@ -53,7 +52,7 @@ const formStyle = {
   margin: "1rem",
   background: "#565656",
   color: "#fff"
-}
+};
 
 const btnStyle = {
   background: "#666482",
@@ -66,11 +65,11 @@ const btnStyle = {
   margin: "1rem",
   marginRight: "3rem",
   minWidth: "10rem"
-}
+};
 
 //PropTypes
 Form.propTypes = {
   setAccounts: PropTypes.func.isRequired
-}
+};
 
 export default Form;
