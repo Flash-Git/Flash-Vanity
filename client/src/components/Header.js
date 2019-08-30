@@ -1,22 +1,10 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
+import React from "react";
 
-import Blockie from "./Blockie";
-
-const Header = ({ connected }) => {
-  const blockie = () => {
-    if (!connected) {
-      return "";
-    }
-    return <Blockie address={window.ethereum.selectedAddress} size="36px" />;
-  };
-
-  return (
-    <header id="section-header" className="section" style={headerStyle}>
-      <h2>Flash-Vanity </h2> &nbsp;&nbsp; <h2>{blockie()}</h2>
-    </header>
-  );
-};
+const Header = () => (
+  <header id="section-header" className="section" style={headerStyle}>
+    <h2>Flash-Vanity </h2>
+  </header>
+);
 
 const headerStyle = {
   display: "flex",
@@ -26,11 +14,6 @@ const headerStyle = {
   textAlign: "center",
   justifyContent: "center",
   padding: "0.2rem"
-};
-
-//PropTypes
-Header.propTypes = {
-  connected: PropTypes.bool.isRequired
 };
 
 export default Header;
