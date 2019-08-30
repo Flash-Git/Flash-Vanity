@@ -3,22 +3,20 @@ import PropTypes from "prop-types";
 
 import Blockie from "./Blockie";
 
-class Header extends Component {
-  blockie = () => {
-    if (!this.props.connected) {
+const Header = ({ connected }) => {
+  const blockie = () => {
+    if (!connected) {
       return "";
     }
     return <Blockie address={window.ethereum.selectedAddress} size="36px" />;
   };
 
-  render() {
-    return (
-      <header id="section-header" className="section" style={headerStyle}>
-        <h2>Flash-Vanity </h2> &nbsp;&nbsp; <h2>{this.blockie()}</h2>
-      </header>
-    );
-  }
-}
+  return (
+    <header id="section-header" className="section" style={headerStyle}>
+      <h2>Flash-Vanity </h2> &nbsp;&nbsp; <h2>{blockie()}</h2>
+    </header>
+  );
+};
 
 const headerStyle = {
   display: "flex",

@@ -1,27 +1,25 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 
-class Web3Status extends Component {
-  onClick = () => {
-    this.props.enableWeb3();
+const Web3Status = ({ enableWeb3, connected }) => {
+  const onClick = () => {
+    enableWeb3();
   };
 
-  render() {
-    return (
-      <div id="section-web3Status" className="section" style={web3StatusStyle}>
-        <button
-          onClick={this.onClick}
-          style={{
-            ...btnStyle,
-            ...(this.props.connected ? btnStyleSent : btnStyleUnsent)
-          }}
-        >
-          {this.props.connected ? "Connected" : "Connect to Web3"}
-        </button>
-      </div>
-    );
-  }
-}
+  return (
+    <div id="section-web3Status" className="section" style={web3StatusStyle}>
+      <button
+        onClick={onClick}
+        style={{
+          ...btnStyle,
+          ...(connected ? btnStyleSent : btnStyleUnsent)
+        }}
+      >
+        {connected ? "Connected" : "Connect to Web3"}
+      </button>
+    </div>
+  );
+};
 
 const web3StatusStyle = {
   textAlign: "center",

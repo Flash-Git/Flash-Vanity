@@ -3,47 +3,43 @@ import crypto from "crypto";
 import { utils } from "ethers";
 import PropTypes from "prop-types";
 
-class Form extends Component {
-  state = {};
-
-  onClickGenerate = e => {
-    this.generateAccounts(20);
+const Form = ({ setAccounts }) => {
+  const onClickGenerate = e => {
+    generateAccounts(20);
   };
 
-  onClickImport = e => {
-    this.importAccounts();
+  const onClickImport = e => {
+    importAccounts();
   };
 
-  generateAccounts = _num => {
+  const generateAccounts = _num => {
     const accounts = [];
     for (let i = 0; i < _num; i++) {
-      accounts.push(this.getNewAccount());
+      accounts.push(getNewAccount());
     }
-    this.props.setAccounts(accounts);
+    setAccounts(accounts);
   };
 
-  getNewAccount = () => {
+  const getNewAccount = () => {
     const privKey = crypto.randomBytes(32);
     const address = "0x" + utils.computeAddress(privKey).toString("hex");
     return { address, privKey: privKey.toString("hex") };
   };
 
-  importAccounts = () => {};
+  const importAccounts = () => {};
 
-  render() {
-    return (
-      <div id="section-form" className="section" style={formStyle}>
-        <button onClick={this.onClickGenerate} style={btnStyle}>
-          Generate Random
-        </button>
-        <button onClick={this.onClickImport} style={btnStyle}>
-          Import
-        </button>
-        {/* Display Form that updates a command string to get desired flash-vanity address out of generator  */}
-      </div>
-    );
-  }
-}
+  return (
+    <div id="section-form" className="section" style={formStyle}>
+      <button onClick={onClickGenerate} style={btnStyle}>
+        Generate Random
+      </button>
+      <button onClick={onClickImport} style={btnStyle}>
+        Import
+      </button>
+      {/* Display Form that updates a command string to get desired flash-vanity address out of generator  */}
+    </div>
+  );
+};
 
 const formStyle = {
   textAlign: "center",

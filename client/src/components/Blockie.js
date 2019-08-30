@@ -2,19 +2,17 @@ import React, { Component } from "react";
 import makeBlockie from "ethereum-blockies-base64";
 import PropTypes from "prop-types";
 
-class Blockie extends Component {
-  render() {
-    return (
-      <img
-        src={makeBlockie(this.props.address)}
-        width={this.props.size}
-        height={this.props.size}
-        alt="blockie"
-        style={blockieStyle}
-      />
-    );
-  }
-}
+const Blockie = ({ address, size }) => {
+  return (
+    <img
+      src={makeBlockie(address)}
+      width={size}
+      height={size}
+      alt="blockie"
+      style={blockieStyle}
+    />
+  );
+};
 
 const blockieStyle = {
   display: "block",

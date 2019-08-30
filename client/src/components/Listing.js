@@ -3,19 +3,15 @@ import PropTypes from "prop-types";
 
 import Account from "./Account";
 
-class Listing extends Component {
-  state = {};
-
-  render() {
-    return (
-      <div id="section-listing" className="section" style={listingStyle}>
-        {this.props.accounts.map(account => (
-          <Account key={account.privKey} account={account} />
-        ))}
-      </div>
-    );
-  }
-}
+const Listing = ({ accounts, connected }) => {
+  return (
+    <div id="section-listing" className="section" style={listingStyle}>
+      {accounts.map(account => (
+        <Account key={account.privKey} account={account} />
+      ))}
+    </div>
+  );
+};
 
 const listingStyle = {
   textAlign: "center",
