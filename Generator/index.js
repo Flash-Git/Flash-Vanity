@@ -156,7 +156,11 @@ function masterRun() {
     if (stringList.length > 3) {
       let shortStringList = [];
       for (let i = 0; i < 3; i++) {
-        shortStringList.push(stringList[i]);
+        shortStringList.push(
+          stringList[i].split("-")[0] +
+            "-" +
+            displayScore(stringList[i].split("-")[1])
+        );
       }
       return shortStringList.join(" or ");
     }
@@ -167,7 +171,7 @@ function masterRun() {
     "Searching for addresses on " +
     inputArg.t +
     " theads with a score of at least" +
-    (score > 0 ? " " + score + " containing" : "") +
+    (displayScore(score) > 0 ? " " + displayScore(score) + " containing" : "") +
     " " +
     (stringList.length > 1 ? "either " : "") +
     shortString() +
@@ -338,7 +342,11 @@ function generateListString(_score, _list) {
       " and" +
       listString.substring(listString.lastIndexOf(", ") + 1, listString.length);
   }
-  return listString + " for a score of " + _score + ":";
+  return listString + " for a score of " + displayScore(_score) + ":";
+}
+
+function displayScore(_score) {
+  return (Math.log(_score) / Math.log(16)).toFixed(2);
 }
 
 /*
