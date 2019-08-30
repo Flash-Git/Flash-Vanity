@@ -4,7 +4,7 @@ import { utils } from "ethers";
 
 import AccountContext from "../context/account/AccountContext";
 
-const Form = () => {
+const PreForm = () => {
   const accountContext = useContext(AccountContext);
 
   const { addAccount } = accountContext;
@@ -31,7 +31,7 @@ const Form = () => {
   const importAccounts = () => {};
 
   return (
-    <div id="section-form" className="section">
+    <div className="pre-trade">
       <button onClick={onClickGenerate}>Generate Random</button>
       <button onClick={onClickImport}>Import</button>
       {/* Display Form that updates a command string to get desired flash-vanity address out of generator  */}
@@ -39,4 +39,4 @@ const Form = () => {
   );
 };
 
-export default Form;
+export default PreForm;
