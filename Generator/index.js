@@ -346,7 +346,13 @@ function generateListString(_score, _list) {
 }
 
 function displayScore(_score) {
-  return (Math.log(_score) / Math.log(16)).toFixed(2);
+  try {
+    return (Math.log(_score) / Math.log(16)).toFixed(2);
+  } catch (e) {
+    if (_score === "number" || score === "letter") {
+      return _score;
+    }
+  }
 }
 
 /*
@@ -472,10 +478,12 @@ function checkString(_stringArray) {
  *
  */
 
-function LetterObj() {
-  this.createdString = "";
-  this.letters = [];
-  this.nextLetters = [];
+class LetterObj {
+  constructor() {
+    this.createdString = "";
+    this.letters = [];
+    this.nextLetters = [];
+  }
 }
 
 function makeObj(_index, _strings, _createdString = ["", 0]) {
