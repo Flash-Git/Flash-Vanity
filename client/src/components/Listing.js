@@ -4,17 +4,14 @@ import PropTypes from "prop-types";
 import Account from "./Account";
 
 class Listing extends Component {
+  state = {};
 
-  state = {
-
-  }
-
-  render(){
-    return(
-      <div id="section-listing" className="section" style={ listingStyle }>
-        { this.props.accounts.map(account =>
-          <Account key= { account.privKey } account={ account } />
-        ) }
+  render() {
+    return (
+      <div id="section-listing" className="section" style={listingStyle}>
+        {this.props.accounts.map(account => (
+          <Account key={account.privKey} account={account} />
+        ))}
       </div>
     );
   }
@@ -27,12 +24,12 @@ const listingStyle = {
   margin: "1rem",
   background: "#565656",
   color: "#fff"
-}
+};
 
 //PropTypes
 Listing.propTypes = {
   connected: PropTypes.bool.isRequired,
   accounts: PropTypes.array.isRequired
-}
+};
 
 export default Listing;
