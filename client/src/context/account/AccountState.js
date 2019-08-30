@@ -1,5 +1,4 @@
 import React, { useReducer } from "react";
-import uuid from "uuid";
 
 import AccountContext from "./AccountContext";
 import AccountReducer from "./AccountReducer";
