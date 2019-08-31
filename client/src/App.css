@@ -41,10 +41,6 @@ ul {
   list-style: none;
 }
 
-img {
-  width: 100%;
-}
-
 .width100 {
   width: 100%;
 }
@@ -340,6 +336,7 @@ select {
 
 .container {
   display: flex;
+  justify-content: center;
   flex-direction: column;
   max-width: 850px;
   min-height: 100%;
@@ -356,7 +353,6 @@ select {
   padding: 0.3rem 3rem;
   z-index: 1;
   width: 100%;
-  border-bottom: solid 1px var(--primary-color);
   opacity: 0.9;
   margin-bottom: 1rem;
 }
@@ -415,7 +411,27 @@ select {
   color: var(--light-color);
 }
 
-/* Trade Form */
+.listing {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.account {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0.2rem;
+}
+
+.account-dropdown {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0.2rem;
+  text-align: center;
+}
+
 .pre-form {
   display: flex;
   justify-self: center;
