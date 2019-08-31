@@ -11,16 +11,25 @@ const Account = ({ account }) => {
   };
 
   return (
-    <div className="generatedAdd">
-      <Blockie address={account.address} size="30px" />
-      <a href={`https://etherscan.io/address/ ${account.address}`}>
+    <div className="account">
+      <button
+        className="btn btn-light"
+        style={{ display: "flex", justifyContent: "center" }}
+        onClick={onClick}
+      >
+        <Blockie address={account.address} />
         {account.address}
-      </a>
+      </button>
       <div>
         {open ? (
-          <span>{account.privKey}</span>
+          <div className="account-dropdown">
+            <span>Private Key: {account.privKey}</span>
+            <a href={`https://etherscan.io/address/${account.address}`}>
+              {`https://etherscan.io/address/${account.address}`}
+            </a>
+          </div>
         ) : (
-          <button onClick={onClick}>Show Private Key</button>
+          ""
         )}
       </div>
     </div>

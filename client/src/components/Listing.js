@@ -10,7 +10,7 @@ const Listing = () => {
   const { accounts } = accountContext;
 
   return (
-    <div id="section-listing" className="section">
+    <div className="listing">
       {accounts.map(account => (
         <Account key={account.address} account={account} />
       ))}
