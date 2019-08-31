@@ -1,14 +1,14 @@
 import React, { Fragment } from "react";
 
-import Header from "../Header";
 import Listing from "../Listing";
-import Form from "../Form";
+import PreForm from "../PreForm";
 
 const Home = () => (
   <Fragment>
-    <Header />
-    <Form />
-    <Listing />
+    <div className="container">
+      <PreForm />
+      <Listing />
+    </div>
   </Fragment>
 );
 
