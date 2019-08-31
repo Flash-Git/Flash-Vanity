@@ -3,7 +3,7 @@ import React, { useReducer } from "react";
 import AccountContext from "./AccountContext";
 import AccountReducer from "./AccountReducer";
 
-import { ADD_ACCOUNT, REMOVE_ACCOUNT } from "../types";
+import { ADD_ACCOUNT, REMOVE_ACCOUNT, CLEAR_ACCOUNTS } from "../types";
 
 const AccountState = props => {
   const [state, dispatch] = useReducer(AccountReducer, []);
@@ -26,12 +26,19 @@ const AccountState = props => {
     });
   };
 
+  const clearAccounts = () => {
+    dispatch({
+      type: CLEAR_ACCOUNTS
+    });
+  };
+
   return (
     <AccountContext.Provider
       value={{
         accounts: state,
         addAccount,
-        removeAccount
+        removeAccount,
+        clearAccounts
       }}
     >
       {props.children}
