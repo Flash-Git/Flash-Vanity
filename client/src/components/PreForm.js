@@ -36,12 +36,17 @@ const PreForm = () => {
 
   return (
     <div className="pre-form">
-      <button className="btn btn-primary m" onClick={onClickGenerate}>
-        Generate New
-      </button>
-      <button className="btn btn-primary m" onClick={onClickClear}>
-        Clear
-      </button>
+      <div className="flex-row">
+        <button
+          className="btn btn-primary btn-block m"
+          onClick={onClickGenerate}
+        >
+          Generate New
+        </button>
+        <button className="btn btn-primary btn-block m" onClick={onClickClear}>
+          Clear
+        </button>
+      </div>
       <button className="btn btn-dark m" onClick={onClickImport}>
         Import
       </button>

@@ -438,16 +438,13 @@ select {
   justify-content: center;
   flex-direction: column;
   width: 100%;
-  max-width: 43em;
+  max-width: 30rem;
   margin: 0 auto;
 }
 
 .flex-row {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
-  margin: 0 auto;
-  max-width: 50em;
 }
 
 .grow-1 {
