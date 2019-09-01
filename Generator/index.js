@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+"use strict";
 const crypto = require("crypto");
 const ethUtils = require("ethereumjs-util");
 const cluster = require("cluster");
@@ -68,6 +69,9 @@ function run() {
   }
 }
 
+//GLOBAL
+const countNum = 10000;
+const countNumMin = countNum - 1;
 /*
  * RUN MASTER
  *
@@ -126,7 +130,8 @@ function masterRun() {
     if (stringList.length === 0) {
       string = string + "-" + 16 ** string.length;
     } else {
-      for (let i = 0; i < stringList.length; i++) {
+      const stringListLength = stringList.length; //performance boost?
+      for (let i = 0; i < stringListLength; i++) {
         stringList[i] = stringList[i] + "-" + 16 ** stringList[i].length;
       }
       string = stringList.join(",");
@@ -137,10 +142,12 @@ function masterRun() {
   if (symAdds) {
     let newString = [];
     const stringList = string.split(",");
-    for (let i = 0; i < stringList.length; i++) {
+    const stringListLength = stringList.length; //performance boost?
+    for (let i = 0; i < stringListLength; i++) {
       const split = stringList[i].split("-");
       const genArray = genSimilars(split[0]);
-      for (let i = 0; i < genArray.length; i++) {
+      const genArrayLength = genArray.length; //performance boost?
+      for (let i = 0; i < genArrayLength; i++) {
         newString.push(genArray[i] + "-" + split[1]);
       }
     }
@@ -207,9 +214,12 @@ function generateAccounts() {
   };
 
   //Convert args
-  for (let i = 0; i < args.rareAdds.length; i++)
+  const rareAddsLength = args.rareAdds.length; //performance boost?
+  const searchLocLength = args.searchLoc.length; //performance boost?
+
+  for (let i = 0; i < rareAddsLength; i++)
     args.rareAdds[i] = args.rareAdds[i] === "true" ? true : false;
-  for (let i = 0; i < args.searchLoc.length; i++)
+  for (let i = 0; i < searchLocLength; i++)
     args.searchLoc[i] = +args.searchLoc[i];
 
   //Total number of generated accounts
@@ -220,7 +230,7 @@ function generateAccounts() {
 
     accGened++;
 
-    if (accGened % 5000 === 4999) {
+    if (accGened % countNum === countNumMin) {
       process.send({
         incr: true
       });
@@ -244,8 +254,8 @@ function checkMatch(_letterObj, _address, _index, _longestString = false) {
   //is using boolean better than empty string?
   if (_letterObj.createdString[1] > 0)
     _longestString = _letterObj.createdString;
-
-  for (let i = 0; i < _letterObj.letters.length; i++) {
+  const _letterObjLettersLength = _letterObj.letters.length;
+  for (let i = 0; i < _letterObjLettersLength; i++) {
     if (_address[_index] !== _letterObj.letters[i]) continue;
     return checkMatch(
       _letterObj.nextLetters[i],
@@ -259,7 +269,7 @@ function checkMatch(_letterObj, _address, _index, _longestString = false) {
 
 function filter(_address, _newStringArray, _args) {
   //Remove 0x
-  address = _address.substring(2);
+  const address = _address.substring(2);
 
   let score = 1;
   let list = [];
@@ -307,7 +317,8 @@ function filter(_address, _newStringArray, _args) {
 }
 
 function getZeros(_address) {
-  for (let i = 0; i < _address.length; i++) {
+  const _addressLength = _address.length;
+  for (let i = 0; i < _addressLength; i++) {
     if (_address[i] !== "0") return i;
   }
   return 0;
@@ -343,7 +354,8 @@ String.prototype.replaceAt = function(index, replacement) {
 function genSimilars(_string) {
   const newString = _string;
   const aeList = [];
-  for (let i = 0; i < newString.length; i++) {
+  const newStringLength = newString.length;
+  for (let i = 0; i < newStringLength; i++) {
     if (newString[i] === "a") {
       aeList.push(["a", "a", "4", i]);
     } else if (newString[i] === "e") {
@@ -355,11 +367,12 @@ function genSimilars(_string) {
   //Imcrement through the possibilities in the same way that you increment base 2 numbers
   const newList = gen(aeList, 0, []);
   let completeList = [newString];
-
-  for (let i = 0; i < newList.length; i++) {
+  const newListLength = newList.length;
+  for (let i = 0; i < newListLength; i++) {
     const aeWordList = newList[i];
     let string = newString;
-    for (let j = 0; j < aeWordList.length; j++) {
+    const aeWordListLength = aeWordList.length;
+    for (let j = 0; j < aeWordListLength; j++) {
       const aeLetterList = aeWordList[j];
       string = string.replaceAt(aeLetterList[3], aeLetterList[0]);
     }
@@ -417,7 +430,8 @@ function checkCommand(_string) {
 }
 
 function checkString(_stringArray) {
-  for (let i = 0; i < _stringArray.length; i++) {
+  const _stringArrayLength = _stringArray.length;
+  for (let i = 0; i < _stringArrayLength; i++) {
     if (argv.p) {
       let entry = _stringArray[i].split("-");
 
@@ -472,7 +486,8 @@ function makeObj(_index, _strings, _createdString = ["", 0]) {
     let outputArr = [[]];
     let currentChar = _strings[0][0][_index];
 
-    for (let i = 0; i < _strings.length; i++) {
+    const _stringsLength = _strings.length;
+    for (let i = 0; i < _stringsLength; i++) {
       if (_strings[i][0][_index] === currentChar) {
         outputArr[counter].push(_strings[i]);
       } else {
@@ -487,7 +502,9 @@ function makeObj(_index, _strings, _createdString = ["", 0]) {
   //Split strings into arrays where all characters up to and including _index are the same
   const splitArr = splitStrings(_index, _strings);
   //Loop through each character's array
-  for (let i = 0; i < splitArr.length; i++) {
+
+  const splitArrLength = splitArr.length;
+  for (let i = 0; i < splitArrLength; i++) {
     //Add each character into this object's letter array
     letterObj.letters.push(splitArr[i][0][0][_index]);
 
@@ -501,7 +518,8 @@ function makeObj(_index, _strings, _createdString = ["", 0]) {
     }
 
     //Loop through every string in the character array
-    for (let j = 0; j < splitArr[i].length; j++) {
+    const splitArrILength = splitArr[i].length;
+    for (let j = 0; j < splitArrILength; j++) {
       //inner is the full string
       let inner = splitArr[i][j];
       //still needs to be placed
@@ -523,10 +541,12 @@ function startWorkers(_spinner, _string, _args) {
 
   let stringArray = _string.split(",");
   //Set scores in array
-  for (let i = 0; i < stringArray.length; i++) {
+  const stringArrayLength = stringArray.length;
+  for (let i = 0; i < stringArrayLength; i++) {
     stringArray[i] = stringArray[i].split("-");
     stringArray[i][1] = +stringArray[i][1];
   }
+  //TODO give information about stringArray
   let newString = JSON.stringify(makeObj(0, stringArray));
 
   for (let i = 0; i < inputArg.t; i++) {
@@ -538,6 +558,7 @@ function startWorkers(_spinner, _string, _args) {
       dynScore: _args.dynScore,
       score: _args.score
     };
+    let proc;
     try {
       proc = cluster.fork(worker_env);
     } catch (e) {
@@ -588,7 +609,7 @@ function startWorkers(_spinner, _string, _args) {
         _spinner.start();
       }
       if (message.incr) {
-        generationTotal += 5000;
+        generationTotal += countNum;
       }
     });
   }
