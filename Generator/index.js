@@ -303,9 +303,8 @@ function filter(_address, _newStringArray, _args) {
       if (zeros < 2) {
         return false;
       } else {
-        if (score % 2 === 1) zeros--; //2 zeros for a byte
         list.push("zeros");
-        score = 16 ** (zeros * _args.zeroMult);
+        score = 16 ** (zeros % 2 === 1 ? zeros - 1 : zeros * _args.zeroMult); //2 zeros for a byte
         handleMatch(zeros, checkMatch(_newStringArray, address, zeros));
       }
     }
@@ -321,7 +320,6 @@ function getZeros(_address) {
   for (let i = 0; i < _addressLength; i++) {
     if (_address[i] !== "0") return i;
   }
-  return 0;
 }
 
 function generateListString(_score, _list) {
