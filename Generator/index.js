@@ -153,13 +153,13 @@ function masterRun() {
 
   //Short string
   const shortString = () => {
-    if (stringList.length > 3) {
+    if (stringList.length > 5) {
       let shortStringList = [];
-      for (let i = 0; i < 3; i++) {
+      for (let i = 0; i < 5; i++) {
         shortStringList.push(
           stringList[i].split("-")[0] +
             "-" +
-            displayScore(stringList[i].split("-")[1])
+            displayScore(+stringList[i].split("-")[1]) //parse score as number
         );
       }
       return shortStringList.join(" or ");
@@ -346,16 +346,9 @@ function generateListString(_score, _list) {
 }
 
 function displayScore(_score) {
-  try {
-    const score = (Math.log(_score) / Math.log(16)).toFixed(2);
-    return +score;
-  } catch (e) {
-    if (_score === "number" || score === "letter") {
-      //console.log("yes" + _score);
-      return _score;
-    }
-    //console.log("no" + _score);
-  }
+  if (typeof _score !== "number") return _score;
+  const score = (Math.log(_score) / Math.log(16)).toFixed(2);
+  return +score;
 }
 
 /*
