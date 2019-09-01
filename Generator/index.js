@@ -289,13 +289,15 @@ function filter(_address, _newStringArray, _args) {
 
   if (_args.zeroMult > 0) {
     if (score === 1) {
-      const zeros = setZeroMult(address);
-      if (zeros > 1) {
-        //2 zeros for a byte (doesn't take into account strings starting with 0)
+      let zeros = getZeros(address);
+      if (zeros < 2) {
+        return false;
+      } else {
+        if (score % 2 === 1) zeros--; //2 zeros for a byte
         list.push("zeros");
         score = 16 ** (zeros * _args.zeroMult);
         handleMatch(zeros, checkMatch(_newStringArray, address, zeros));
-      } else score--;
+      }
     }
   }
 
@@ -304,34 +306,11 @@ function filter(_address, _newStringArray, _args) {
   return generateListString(score, list);
 }
 
-//Old check
-function checkChar(_address, _index, _stringArray) {
-  let newArray = [];
-  for (let i = 0; i < _stringArray.length; i++) {
-    const string = _stringArray[i][0];
-    if (string.length + _index >= _address.length) continue;
-    let removed = false;
-    for (let j = 0; j < string.length; j++) {
-      if (_address[_index + j] !== string[j]) {
-        removed = true;
-        break;
-      }
-    }
-    if (!removed) newArray.push(_stringArray[i]);
-  }
-  if (newArray.length === 0) return false;
-
-  let highScore = ["", 1];
-  for (let i = 0; i < newArray.length; i++) {
-    if (newArray[i][1] > highScore[1]) highScore = newArray[i];
-  }
-  return highScore;
-}
-
-function setZeroMult(_address) {
+function getZeros(_address) {
   for (let i = 0; i < _address.length; i++) {
     if (_address[i] !== "0") return i;
   }
+  return 0;
 }
 
 function generateListString(_score, _list) {
