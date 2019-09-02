@@ -19,7 +19,7 @@ const inputArg = require("yargs")
   .default("n", "10")
   .alias("c", "count")
   .describe("c", "Score required to return address")
-  .default("c", 1)
+  .default("c", "1")
   .alias("sl", "searchLocation")
   .describe("sl", "Multipliers for where to look for string")
   .default("sl", "1, 0, 0")
@@ -90,6 +90,7 @@ function masterRun() {
   const cleanString = _string => {
     try {
       return _string
+        .toString()
         .toLowerCase()
         .split(" ")
         .join("");
@@ -160,25 +161,25 @@ function masterRun() {
 
   //Short string
   const shortString = () => {
-    if (stringList.length > 5) {
-      let shortStringList = [];
-      for (let i = 0; i < 5; i++) {
-        shortStringList.push(
-          stringList[i].split("-")[0] +
-            "-" +
-            displayScore(+stringList[i].split("-")[1]) //parse score as number
-        );
-      }
-      return shortStringList.join(" or ");
+    const shortStringList = [];
+    const stringListLength = stringList.length > 5 ? 5 : stringList.length;
+    for (let i = 0; i < stringListLength; i++) {
+      shortStringList.push(
+        stringList[i].split("-")[0] +
+          "-" +
+          displayScore(+stringList[i].split("-")[1]) //parse score as number
+      );
     }
-    return stringList.join(" or ");
+    return shortStringList.join(" or ");
   };
 
   const searchMsg =
     "Searching for addresses on " +
     inputArg.t +
     " theads with a score of at least" +
-    (displayScore(score) > 0 ? " " + displayScore(score) + " containing" : "") +
+    (displayScore(+score) > 0
+      ? " " + displayScore(+score) + " containing"
+      : "") +
     " " +
     (stringList.length > 1 ? "either " : "") +
     shortString() +
