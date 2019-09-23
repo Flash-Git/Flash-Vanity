@@ -300,7 +300,15 @@ function filter(_address, _newStringArray, _args) {
 
   if (_args.zeroMult > 0) {
     if (score === 1) {
-      let zeros = getZeros(address);
+      const zeros = () => {
+        const addressLength = address.length;
+        for (let i = 0; i < addressLength; i++) {
+          if (address[i] !== "0") return i;
+        }
+        return 0;
+      };
+      zeros = zeros();
+
       if (zeros < 2) {
         return false;
       } else {
@@ -314,13 +322,6 @@ function filter(_address, _newStringArray, _args) {
   if (score < _args.score) return false;
 
   return generateListString(score, list);
-}
-
-function getZeros(_address) {
-  const _addressLength = _address.length;
-  for (let i = 0; i < _addressLength; i++) {
-    if (_address[i] !== "0") return i;
-  }
 }
 
 function generateListString(_score, _list) {
